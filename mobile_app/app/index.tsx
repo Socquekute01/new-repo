@@ -1,3 +1,4 @@
+import api, { productAPI } from "@/api";
 import Footer from "@/components/layout/Footer";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
@@ -6,6 +7,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  ImageBackground,
   Modal,
   ScrollView,
   StyleSheet,
@@ -24,14 +26,18 @@ const MOCK_PRODUCTS = [
     name: "Classic Black Tee",
     price: 450000,
     originalPrice: 600000,
-    images: ["https://via.placeholder.com/300x300/1a1a1a/ffffff?text=Tee+1"],
+    images: [
+      "https://i.pinimg.com/736x/bf/31/8c/bf318c439bd433880bf729504c8fc1e3.jpg",
+    ],
     stock: 10,
   },
   {
     _id: "2",
     name: "Limited Edition Hoodie",
     price: 1200000,
-    images: ["https://via.placeholder.com/300x300/333333/ffffff?text=Hoodie"],
+    images: [
+      "https://i.pinimg.com/736x/ae/e2/1f/aee21fbe2ef1b99629a753ead2067fa2.jpg",
+    ],
     stock: 3,
   },
   {
@@ -39,14 +45,18 @@ const MOCK_PRODUCTS = [
     name: "Graphic Collab Shirt",
     price: 750000,
     originalPrice: 900000,
-    images: ["https://via.placeholder.com/300x300/555555/ffffff?text=Shirt"],
+    images: [
+      "https://i.pinimg.com/736x/49/a2/16/49a21650f366b7892a4aeaee996b9d88.jpg",
+    ],
     stock: 0,
   },
   {
     _id: "4",
     name: "Vintage Wash Pants",
     price: 980000,
-    images: ["https://via.placeholder.com/300x300/222222/ffffff?text=Pants"],
+    images: [
+      "https://i.pinimg.com/736x/51/b5/5f/51b55f823cb8d028d2c220a40f5e55ea.jpg",
+    ],
     stock: 7,
   },
   {
@@ -54,14 +64,18 @@ const MOCK_PRODUCTS = [
     name: "Oversized Drop Tee",
     price: 520000,
     originalPrice: 650000,
-    images: ["https://via.placeholder.com/300x300/444444/ffffff?text=Drop+Tee"],
+    images: [
+      "https://i.pinimg.com/736x/c0/a6/3d/c0a63d21cc8defc9205be2b07f2a50f2.jpg",
+    ],
     stock: 2,
   },
   {
     _id: "6",
     name: "Cargo Shorts",
     price: 680000,
-    images: ["https://via.placeholder.com/300x300/666666/ffffff?text=Cargo"],
+    images: [
+      "https://i.pinimg.com/736x/8f/bd/74/8fbd7481a68b226f42f8ee6217cdee0a.jpg",
+    ],
     stock: 15,
   },
 ];
@@ -73,6 +87,8 @@ const BANNER_SLIDES = [
     subtitle: "Spring / Summer 2025",
     bg: "#1a1a1a",
     accent: "#ffffff",
+    image:
+      "https://i.pinimg.com/736x/bf/31/8c/bf318c439bd433880bf729504c8fc1e3.jpg",
   },
   {
     id: "2",
@@ -80,6 +96,8 @@ const BANNER_SLIDES = [
     subtitle: "Collab with World Artists",
     bg: "#2d2d2d",
     accent: "#e8e8e8",
+    image:
+      "https://i.pinimg.com/736x/49/a2/16/49a21650f366b7892a4aeaee996b9d88.jpg",
   },
   {
     id: "3",
@@ -87,6 +105,8 @@ const BANNER_SLIDES = [
     subtitle: "Most loved pieces",
     bg: "#111111",
     accent: "#cccccc",
+    image:
+      "https://i.pinimg.com/736x/51/b5/5f/51b55f823cb8d028d2c220a40f5e55ea.jpg",
   },
 ];
 
@@ -154,24 +174,29 @@ function BannerSlider({ onNavigate }) {
             key={slide.id}
             activeOpacity={0.9}
             onPress={() => onNavigate("shop")}
-            style={[styles.bannerSlide, { backgroundColor: slide.bg }]}
           >
-            <Text
-              style={[
-                styles.bannerSubtitle,
-                { color: slide.accent, opacity: 0.6 },
-              ]}
+            <ImageBackground
+              source={slide.image}
+              style={[styles.bannerSlide, { backgroundColor: slide.bg }]}
+              resizeMode="cover"
             >
-              {slide.subtitle}
-            </Text>
-            <Text style={[styles.bannerTitle, { color: slide.accent }]}>
-              {slide.title}
-            </Text>
-            <View style={[styles.bannerBtn, { borderColor: slide.accent }]}>
-              <Text style={[styles.bannerBtnTxt, { color: slide.accent }]}>
-                SHOP NOW
+              <Text
+                style={[
+                  styles.bannerSubtitle,
+                  { color: slide.accent, opacity: 0.6 },
+                ]}
+              >
+                {slide.subtitle}
               </Text>
-            </View>
+              <Text style={[styles.bannerTitle, { color: slide.accent }]}>
+                {slide.title}
+              </Text>
+              <View style={[styles.bannerBtn, { borderColor: slide.accent }]}>
+                <Text style={[styles.bannerBtnTxt, { color: slide.accent }]}>
+                  SHOP NOW
+                </Text>
+              </View>
+            </ImageBackground>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -282,6 +307,7 @@ function QuickViewModal({ product, visible, onClose, onNavigate }) {
           <TouchableOpacity
             style={styles.modalViewBtn}
             onPress={() => {
+              console.log(productId);
               onClose();
               onNavigate("product", { id: productId });
             }}
@@ -306,14 +332,15 @@ function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
 
   useEffect(() => {
     // Simulate API fetch
-    setTimeout(() => {
-      setProducts(MOCK_PRODUCTS);
+    setTimeout(async () => {
+      const listProduct = await productAPI.getAll();
+      setProducts(listProduct);
       setLoading(false);
     }, 800);
   }, []);
 
   const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
-  const paginatedProducts = products.slice(
+  const paginatedProducts = products?.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE,
   );
@@ -579,7 +606,7 @@ const styles = StyleSheet.create({
   },
   bannerSlide: {
     width: SCREEN_WIDTH,
-    height: 220,
+    height: 320,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,

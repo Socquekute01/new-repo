@@ -45,7 +45,7 @@ const app = express();
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS ||
-  "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5001,http://127.0.0.1:5001"
+  "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5001,http://127.0.0.1:5001,http://localhost:8081,http://127.0.0.1:8081"
 )
   .split(",")
   .map((origin) => origin.trim())
@@ -96,11 +96,7 @@ app.use("/api/users", authenticateToken, requireAdmin, userRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use(
-  "/api/recommendations",
-  authenticateToken,
-  aiRecommendationRoutes,
-);
+app.use("/api/recommendations", authenticateToken, aiRecommendationRoutes);
 app.use("/api/chatbot-logs", authenticateToken, requireAdmin, chatbotLogRoutes);
 app.use("/api/chatbot", authenticateToken, chatbotRoutes);
 app.use("/api/ai-behavior-logs", authenticateToken, aiBehaviorLogRoutes);

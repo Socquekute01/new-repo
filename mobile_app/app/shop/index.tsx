@@ -1,3 +1,4 @@
+import { categoryAPI, productAPI } from "@/api";
 import Footer from "@/components/layout/Footer";
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -472,11 +473,11 @@ export default function ShopScreen() {
 
   useEffect(() => {
     // Replace with real API:
-    // const data = await productAPI.getAll();
-    // const cats = await categoryAPI.getAll();
-    setTimeout(() => {
-      setProducts(MOCK_PRODUCTS);
-      setCategories(MOCK_CATEGORIES);
+    setTimeout(async () => {
+      const data = await productAPI.getAll();
+      const cats = await categoryAPI.getAll();
+      setProducts(data);
+      setCategories(cats);
       setLoading(false);
     }, 700);
   }, []);

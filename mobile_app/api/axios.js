@@ -1,6 +1,6 @@
 ﻿import axios from "axios";
 
-const baseURL =  "http://localhost:5001/api";
+const baseURL = "http://localhost:5001/api";
 
 const api = axios.create({
   baseURL,
@@ -28,8 +28,7 @@ api.interceptors.response.use(
     // Chỉ redirect khi 401 VÀ là trang yêu cầu auth (cart, checkout, profile)
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
-      const isAuthPage =
-        currentPath === "/login" || currentPath === "/register";
+      const isAuthPage = currentPath === "/auth";
       const isPublicPage =
         currentPath === "/" ||
         currentPath === "/shop" ||
@@ -39,7 +38,7 @@ api.interceptors.response.use(
       if (!isAuthPage && !isPublicPage) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/login";
+        window.location.href = "/auth";
       }
     }
     return Promise.reject(error);

@@ -1,4 +1,7 @@
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -12,24 +15,19 @@ import {
 } from "react-native";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-type HeaderType = {
-  onNavigate: (page: string, params?: any) => void;
-  cartCount: number;
-  user: { username: string };
-  onLogout: () => void;
-};
-
-export default function Header({
-  onNavigate,
-  cartCount,
-  user,
-  onLogout,
-}: HeaderType) {
+export default function Header() {
+  const router = useRouter();
+  const { user, isAuthenticated, onLogout } = useAuth();
+  const { getCartItemsCount } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
+  const cartCount = getCartItemsCount();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const menuItems = ["SHOP", "CONTACT", "ABOUT US", "BEST SELLER"];
+  const onNavigate = (screen: string, params?: any) => {
+    router.push("/" + screen);
+  };
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -69,7 +67,7 @@ export default function Header({
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              onPress={() => onNavigate("login")}
+              onPress={() => onNavigate("auth")}
               style={styles.iconBtn}
             >
               <Feather name="user" size={22} color="#1a1a1a" />

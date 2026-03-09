@@ -1,4 +1,7 @@
+import { productAPI } from "@/api";
 import Footer from "@/components/layout/Footer";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -220,50 +223,23 @@ function EmptyCart({ onContinue }: { onContinue: () => void }) {
 export default function CartScreen() {
   const router = useRouter();
 
+  const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
+
   // Replace with real context:
-  const isAuthenticated = false;
-  const [cartItems, setCartItems] = useState<any[]>(MOCK_CART_ITEMS);
+  const { isAuthenticated } = useAuth();
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(true);
 
   // Mock cart functions — replace with context:
-  const removeFromCart = (productId: string, size: string) => {
-    setCartItems((prev) =>
-      prev.filter(
-        (i) =>
-          !(
-            (i.product._id === productId || i.product.id === productId) &&
-            i.size === size
-          ),
-      ),
-    );
-  };
-  const updateQuantity = (productId: string, size: string, qty: number) => {
-    if (qty <= 0) {
-      removeFromCart(productId, size);
-      return;
-    }
-    setCartItems((prev) =>
-      prev.map((i) =>
-        (i.product._id === productId || i.product.id === productId) &&
-        i.size === size
-          ? { ...i, quantity: qty }
-          : i,
-      ),
-    );
-  };
-  const getCartTotal = () =>
-    cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+
   const getCartCount = () => cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
   // Fetch related
   useEffect(() => {
     const fetchRelated = async () => {
       try {
-        // const data = await productAPI.getAll({ limit: 6 });
-        // setRelatedProducts(data.data || data);
-        await new Promise((r) => setTimeout(r, 500));
-        setRelatedProducts(MOCK_RELATED);
+        const data = await productAPI.getAll({ limit: 6 });
+        setRelatedProducts(data.data || data);
       } catch {
         setRelatedProducts([]);
       } finally {
@@ -277,7 +253,7 @@ export default function CartScreen() {
     if (!isAuthenticated) {
       Alert.alert("Đăng nhập", "Bạn cần đăng nhập để thanh toán.", [
         { text: "Huỷ", style: "cancel" },
-        { text: "Đăng nhập", onPress: () => router.push("/login") },
+        { text: "Đăng nhập", onPress: () => router.push("/auth") },
       ]);
       return;
     }

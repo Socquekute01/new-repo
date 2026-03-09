@@ -16,6 +16,8 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Footer from "@/components/layout/Footer";
+import { productAPI } from "@/api";
+import { useCart } from "@/context/CartContext";
 
 // ─── Replace with your real API & context ────────────────────────────────────
 // import { productAPI, reviewAPI } from '@/services/api';
@@ -153,14 +155,11 @@ function ReviewCard({ review }: { review: any }) {
 export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { addToCart } = useCart();
 
   // Replace with real context:
   const isAuthenticated = false;
   const user: any = null;
-  const addToCart = (product: any, size: string, qty: number) => {
-    console.log("addToCart", product.name, size, qty);
-  };
-
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState("");
@@ -180,10 +179,10 @@ export default function ProductDetailScreen() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        // const data = await productAPI.getById(id);
-        // setProduct(data.data || data);
-        await new Promise((r) => setTimeout(r, 600));
-        setProduct(MOCK_PRODUCT);
+        const data = await productAPI.getById(id);
+        setProduct(data.data || data);
+        // await new Promise((r) => setTimeout(r, 600));
+        // setProduct(MOCK_PRODUCT);
       } catch {
         Alert.alert("Lỗi", "Không thể tải sản phẩm");
       } finally {
@@ -197,7 +196,7 @@ export default function ProductDetailScreen() {
         // const data = await reviewAPI.getByProduct(id);
         // setReviews(Array.isArray(data) ? data : []);
         await new Promise((r) => setTimeout(r, 400));
-        setReviews(MOCK_REVIEWS);
+        // setReviews(MOCK_REVIEWS);
       } catch {
         setReviews([]);
       } finally {
@@ -249,6 +248,7 @@ export default function ProductDetailScreen() {
       );
       return;
     }
+    console.log(123)
     addToCart(product, selectedSize, 1);
     setSelectedSize("");
     Alert.alert("✓ Đã thêm", `${product.name} đã được thêm vào giỏ hàng.`);
@@ -267,7 +267,7 @@ export default function ProductDetailScreen() {
   // ── Submit review
   const handleSubmitReview = async () => {
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push("/auth");
       return;
     }
     if (!rating) {
@@ -538,7 +538,7 @@ export default function ProductDetailScreen() {
                   <Text style={styles.loginPromptTxt}>
                     Bạn cần đăng nhập để đánh giá.
                   </Text>
-                  <TouchableOpacity onPress={() => router.push("/login")}>
+                  <TouchableOpacity onPress={() => router.push("/auth")}>
                     <Text style={styles.loginPromptLink}>Đăng nhập ngay →</Text>
                   </TouchableOpacity>
                 </View>

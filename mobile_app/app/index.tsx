@@ -1,6 +1,7 @@
 import api, { productAPI } from "@/api";
 import Footer from "@/components/layout/Footer";
 import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -435,8 +436,10 @@ function FeaturesSection() {
 // ─── HOMEPAGE ─────────────────────────────────────────────────────────────────
 
 export default function Homepage() {
+  const router = useRouter();
   const handleNavigate = (screen: string, params?: any) => {
     // navigation.navigate(screen, params);
+    router.push(`/product/${params?.id}`);
     console.log("Navigate to:", screen, params);
   };
 

@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { cartAPI, orderAPI, vnpayAPI } from "@/api";
 
 // ─── Replace with your real context & API ────────────────────────────────────
 // import { useCart } from '@/context/CartContext';
@@ -251,11 +252,14 @@ export default function OrderScreen() {
       }
       try {
         setCartLoading(true);
-        // const response = await cartAPI.getMyCart();
-        // if (response?.success) setServerCartItems(Array.isArray(response.items) ? response.items : []);
-        // else setServerCartItems(null);
-        await new Promise((r) => setTimeout(r, 300));
-        setServerCartItems(null); // use local cart in mock
+        const response = await cartAPI.getMyCart();
+        if (response?.success)
+          setServerCartItems(
+            Array.isArray(response.items) ? response.items : [],
+          );
+        else setServerCartItems(null);
+        // await new Promise((r) => setTimeout(r, 300));
+        // setServerCartItems(null); // use local cart in mock
       } catch {
         setServerCartItems(null);
       } finally {
@@ -318,15 +322,15 @@ export default function OrderScreen() {
         email: formData.email,
       };
 
-      // const response = await orderAPI.create(orderData);
-      // const orderId = response?.order?._id || response?.order?.id;
-      const response = { order: { _id: "mock-order-id" } };
-      const orderId = response.order._id;
+      const response = await orderAPI.create(orderData);
+      const orderId = response?.order?._id || response?.order?.id;
+      // const response = { order: { _id: "mock-order-id" } };
+      // const orderId = response.order._id;
 
       if (paymentMethod === "vnpay") {
-        // const paymentResponse = await vnpayAPI.createPaymentUrl({ orderId });
-        // const paymentUrl = paymentResponse?.paymentUrl;
-        const paymentUrl = `https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder?orderId=${orderId}`;
+        const paymentResponse = await vnpayAPI.createPaymentUrl({ orderId });
+        const paymentUrl = paymentResponse?.paymentUrl;
+        // const paymentUrl = `https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder?orderId=${orderId}`;
         if (!paymentUrl) {
           Alert.alert("Lỗi", "Không tạo được link thanh toán VNPay.");
           return;

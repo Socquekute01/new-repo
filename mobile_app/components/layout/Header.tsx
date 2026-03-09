@@ -24,7 +24,7 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const menuItems = ["SHOP", "CONTACT", "ABOUT US", "BEST SELLER"];
+  const menuItems = ["SHOP", "CONTACT", "ABOUT", "BEST SELLER"];
   const onNavigate = (screen: string, params?: any) => {
     router.push("/" + screen);
   };

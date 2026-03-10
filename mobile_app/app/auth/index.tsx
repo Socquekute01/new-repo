@@ -13,7 +13,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { useAuth } from "@/context/AuthContext";
@@ -104,7 +104,6 @@ const fieldStyles = StyleSheet.create({
   errorTxt: { fontSize: 11, color: "#ef4444", marginTop: 3, marginLeft: 4 },
 });
 
-// ─── SOCIAL BUTTON ────────────────────────────────────────────────────────────
 function SocialBtn({ icon }: { icon: string }) {
   return (
     <TouchableOpacity style={authStyles.socialBtn} activeOpacity={0.7}>
@@ -113,7 +112,6 @@ function SocialBtn({ icon }: { icon: string }) {
   );
 }
 
-// ─── LOGIN FORM ───────────────────────────────────────────────────────────────
 function LoginForm({
   onSwitch,
   onSuccess,
@@ -151,7 +149,6 @@ function LoginForm({
       setLoading(true);
       preventRef.current = true;
 
-      // Replace with real login:
       const result = await login(data.email, data.password);
 
       if (result.success) {
@@ -172,7 +169,6 @@ function LoginForm({
     <View style={authStyles.formContainer}>
       <Text style={authStyles.formTitle}>Sign In</Text>
 
-      {/* Social */}
       <View style={authStyles.socialRow}>
         <SocialBtn icon="facebook" />
         <SocialBtn icon="mail" />
@@ -180,7 +176,6 @@ function LoginForm({
       </View>
       <Text style={authStyles.orTxt}>or use your account</Text>
 
-      {/* Fields */}
       <Field
         icon="mail"
         placeholder="Email"
@@ -270,15 +265,12 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
     try {
       setLoading(true);
 
-      // Replace with real register:
       const result = await register(
         data.name,
         data.email,
         data.phone,
         data.password,
       );
-      //   await new Promise((r) => setTimeout(r, 900));
-      //   const result = { success: true, message: "Registration successful!" };
 
       if (result.success) {
         Alert.alert("✓ Success", result.message || "Registration successful!", [
@@ -299,7 +291,6 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
     <View style={authStyles.formContainer}>
       <Text style={authStyles.formTitle}>Create Account</Text>
 
-      {/* Social */}
       <View style={authStyles.socialRow}>
         <SocialBtn icon="facebook" />
         <SocialBtn icon="mail" />
@@ -307,7 +298,6 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
       </View>
       <Text style={authStyles.orTxt}>or use your email for registration</Text>
 
-      {/* Fields */}
       <Field
         icon="user"
         placeholder="Username"
@@ -399,7 +389,6 @@ export default function AuthScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Back Button */}
         <TouchableOpacity
           onPress={() => router.push("/")}
           style={authStyles.backBtn}
@@ -408,12 +397,9 @@ export default function AuthScreen() {
           <Text style={authStyles.backBtnTxt}>Back Home</Text>
         </TouchableOpacity>
 
-        {/* ── Hero Banner */}
         <View style={authStyles.heroBanner}>
           <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=70",
-            }}
+            source={{}}
             style={StyleSheet.absoluteFillObject}
             resizeMode="cover"
           />
@@ -430,7 +416,6 @@ export default function AuthScreen() {
           </View>
         </View>
 
-        {/* ── Tab Switcher */}
         <View style={authStyles.tabRow}>
           <TouchableOpacity
             onPress={() => switchTo(false)}
@@ -454,7 +439,6 @@ export default function AuthScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Form Card */}
         <View style={authStyles.card}>
           {isSignUp ? (
             <RegisterForm onSwitch={() => switchTo(false)} />
@@ -474,7 +458,6 @@ const authStyles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f5f5f5" },
   screenContent: { paddingBottom: 40 },
 
-  // Back button
   backBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -485,7 +468,6 @@ const authStyles = StyleSheet.create({
   },
   backBtnTxt: { fontSize: 14, fontWeight: "600", color: "#555" },
 
-  // Hero
   heroBanner: { height: 200, position: "relative", overflow: "hidden" },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -511,7 +493,6 @@ const authStyles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // Tabs
   tabRow: {
     flexDirection: "row",
     marginHorizontal: 20,
@@ -537,7 +518,6 @@ const authStyles = StyleSheet.create({
   tabTxt: { fontSize: 14, fontWeight: "600", color: "#999" },
   tabTxtActive: { color: "#1a1a1a" },
 
-  // Card
   card: {
     marginHorizontal: 20,
     marginTop: 16,
@@ -551,7 +531,6 @@ const authStyles = StyleSheet.create({
     elevation: 3,
   },
 
-  // Form
   formContainer: {},
   formTitle: {
     fontSize: 22,
@@ -561,7 +540,6 @@ const authStyles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // Social
   socialRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -580,11 +558,9 @@ const authStyles = StyleSheet.create({
   },
   orTxt: { fontSize: 12, color: "#aaa", textAlign: "center", marginBottom: 18 },
 
-  // Forgot
   forgotBtn: { alignSelf: "flex-end", marginTop: 4, marginBottom: 8 },
   forgotTxt: { fontSize: 13, color: "#555" },
 
-  // Submit
   submitBtn: {
     backgroundColor: "#1a1a1a",
     borderRadius: 10,
@@ -599,7 +575,6 @@ const authStyles = StyleSheet.create({
     letterSpacing: 1.5,
   },
 
-  // Switch
   switchBtn: { marginTop: 18, alignItems: "center" },
   switchTxt: { fontSize: 13, color: "#888" },
   switchLink: { color: "#1a1a1a", fontWeight: "700" },

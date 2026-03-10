@@ -85,9 +85,6 @@ const About = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* <Header /> */}
-
-      {/* ── Hero ── */}
       <View style={styles.hero}>
         <Image
           source={{
@@ -103,7 +100,6 @@ const About = () => {
         </Text>
       </View>
 
-      {/* ── Our Story ── */}
       <View style={styles.section}>
         <Text style={styles.heading}>Our Story</Text>
         <Image
@@ -133,7 +129,6 @@ const About = () => {
         </Text>
       </View>
 
-      {/* ── Stats ── */}
       <View style={styles.statsBg}>
         <View style={styles.statsGrid}>
           {stats.map(({ label, value, Icon }, i) => (
@@ -148,7 +143,6 @@ const About = () => {
         </View>
       </View>
 
-      {/* ── Our Values ── */}
       <View style={styles.section}>
         <Text style={[styles.heading, styles.centered]}>Our Values</Text>
         <Text style={[styles.subheading, styles.centered]}>
@@ -167,7 +161,6 @@ const About = () => {
         </View>
       </View>
 
-      {/* ── Team ── */}
       <View style={styles.teamBg}>
         <Text style={[styles.heading, styles.centered]}>Meet Our Team</Text>
         <Text style={[styles.subheading, styles.centered]}>
@@ -191,7 +184,6 @@ const About = () => {
         </View>
       </View>
 
-      {/* ── Mission ── */}
       <View style={styles.section}>
         <View style={styles.missionCard}>
           <Text style={styles.missionTitle}>Our Mission</Text>
@@ -204,7 +196,6 @@ const About = () => {
         </View>
       </View>
 
-      {/* ── CTA ── */}
       <View style={styles.ctaBg}>
         <Text style={[styles.heading, styles.centered]}>Join Our Journey</Text>
         <Text style={[styles.subheading, styles.centered]}>
@@ -227,8 +218,6 @@ const About = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* <Footer /> */}
     </ScrollView>
   );
 };
@@ -236,7 +225,6 @@ const About = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  // Hero
   hero: {
     height: 280,
     backgroundColor: "#111827",
@@ -263,7 +251,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // Generic section
   section: { paddingHorizontal: 20, paddingVertical: 36 },
   centered: { textAlign: "center" },
   heading: {
@@ -285,7 +272,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  // Story image
   storyImage: {
     width: "100%",
     height: 220,
@@ -293,7 +279,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // Stats
   statsBg: {
     backgroundColor: "#111827",
     paddingVertical: 40,
@@ -323,7 +308,6 @@ const styles = StyleSheet.create({
   },
   statLabel: { fontSize: 14, color: "#d1d5db" },
 
-  // Values
   valuesGrid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
   valueCard: {
     width: "47%",
@@ -355,7 +339,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 
-  // Team
   teamBg: {
     backgroundColor: "#f9fafb",
     paddingHorizontal: 20,
@@ -379,7 +362,6 @@ const styles = StyleSheet.create({
   },
   teamPosition: { fontSize: 13, color: "#6b7280", textAlign: "center" },
 
-  // Mission
   missionCard: {
     backgroundColor: "#111827",
     borderRadius: 16,
@@ -400,7 +382,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 
-  // CTA
   ctaBg: {
     backgroundColor: "#f9fafb",
     paddingHorizontal: 24,

@@ -40,9 +40,7 @@ export default function Header() {
     <View style={styles.header}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      {/* Main Row */}
       <View style={styles.headerRow}>
-        {/* Logo */}
         <TouchableOpacity onPress={() => onNavigate("home")}>
           <Image
             source={{
@@ -52,9 +50,7 @@ export default function Header() {
           />
         </TouchableOpacity>
 
-        {/* Right Icons */}
         <View style={styles.headerIcons}>
-          {/* User */}
           {user ? (
             <TouchableOpacity
               onPress={() => setUserMenuOpen(!userMenuOpen)}
@@ -74,7 +70,6 @@ export default function Header() {
             </TouchableOpacity>
           )}
 
-          {/* Cart */}
           <TouchableOpacity
             onPress={() => onNavigate("cart")}
             style={styles.iconBtn}
@@ -87,7 +82,6 @@ export default function Header() {
             )}
           </TouchableOpacity>
 
-          {/* Hamburger */}
           <TouchableOpacity
             onPress={() => setMenuOpen(!menuOpen)}
             style={styles.iconBtn}
@@ -97,7 +91,6 @@ export default function Header() {
         </View>
       </View>
 
-      {/* Search Bar */}
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -113,7 +106,6 @@ export default function Header() {
         </TouchableOpacity>
       </View>
 
-      {/* Dropdown Menu */}
       {menuOpen && (
         <View style={styles.mobileMenu}>
           {menuItems.map((item) => (
@@ -131,7 +123,6 @@ export default function Header() {
         </View>
       )}
 
-      {/* User Dropdown */}
       {userMenuOpen && user && (
         <View style={styles.userMenu}>
           <TouchableOpacity
@@ -175,7 +166,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
-  // ── Header
   header: {
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
@@ -292,7 +282,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
-  // ── Banner
   bannerContainer: {
     position: "relative",
   },
@@ -344,7 +333,6 @@ const styles = StyleSheet.create({
     width: 18,
   },
 
-  // ── Section Header
   sectionContainer: {
     paddingTop: 40,
     paddingBottom: 16,
@@ -366,7 +354,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // ── Product Grid
   loadingWrap: {
     alignItems: "center",
     paddingVertical: 60,
@@ -388,7 +375,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // ── Product Card
   productCard: {
     width: (SCREEN_WIDTH - 36) / 2,
     backgroundColor: "#ffffff",
@@ -473,7 +459,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
 
-  // ── Pagination
   paginationRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -501,7 +486,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  // ── Quick View Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -555,7 +539,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // ── Features
   featuresSection: {
     backgroundColor: "#f8f8f8",
     paddingHorizontal: 16,
@@ -596,7 +579,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // ── Footer
   footer: {
     backgroundColor: "#111111",
     paddingHorizontal: 20,

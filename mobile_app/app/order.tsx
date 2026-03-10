@@ -17,11 +17,6 @@ import {
   View,
 } from "react-native";
 
-// ─── Replace with your real context & API ────────────────────────────────────
-// import { useCart } from '@/context/CartContext';
-// import { useAuth } from '@/context/AuthContext';
-// import { cartAPI, orderAPI, vnpayAPI } from '@/services/api';
-
 const MOCK_USER = { _id: "u1", email: "user@example.com", phone: "0901234567" };
 const MOCK_CART = [
   {
@@ -197,7 +192,6 @@ function SectionHeader({ title, step }: { title: string; step: number }) {
 export default function OrderScreen() {
   const router = useRouter();
 
-  // Replace with real context:
   const user = MOCK_USER;
   const isAuthenticated = true;
   const cartItems = MOCK_CART;
@@ -235,7 +229,6 @@ export default function OrderScreen() {
   );
   const total = subtotal + shippingFee;
 
-  // Fetch server cart
   useEffect(() => {
     const fetchCart = async () => {
       if (!isAuthenticated) {
@@ -250,8 +243,6 @@ export default function OrderScreen() {
             Array.isArray(response.items) ? response.items : [],
           );
         else setServerCartItems(null);
-        // await new Promise((r) => setTimeout(r, 300));
-        // setServerCartItems(null); // use local cart in mock
       } catch {
         setServerCartItems(null);
       } finally {
@@ -264,7 +255,6 @@ export default function OrderScreen() {
   const setField = (key: string) => (val: string) =>
     setFormData((prev) => ({ ...prev, [key]: val }));
 
-  // Validate
   const validate = (): string | null => {
     const { email, firstName, lastName, phone, address, district, city } =
       formData;
@@ -316,20 +306,16 @@ export default function OrderScreen() {
 
       const response = await orderAPI.create(orderData);
       const orderId = response?.order?._id || response?.order?.id;
-      // const response = { order: { _id: "mock-order-id" } };
-      // const orderId = response.order._id;
 
       if (paymentMethod === "vnpay") {
         const paymentResponse = await vnpayAPI.createPaymentUrl({ orderId });
         const paymentUrl = paymentResponse?.paymentUrl;
-        // const paymentUrl = `https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder?orderId=${orderId}`;
         if (!paymentUrl) {
           Alert.alert("Lỗi", "Không tạo được link thanh toán VNPay.");
           return;
         }
 
         clearCart();
-        // Open VNPay in browser:
         await Linking.openURL(paymentUrl);
         return;
       }
@@ -350,7 +336,6 @@ export default function OrderScreen() {
     }
   };
 
-  // Empty cart
   if (!cartLoading && effectiveCartItems.length === 0) {
     return (
       <View style={styles.emptyWrap}>
@@ -372,7 +357,6 @@ export default function OrderScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
-        {/* ── Breadcrumb */}
         <View style={styles.breadcrumb}>
           <TouchableOpacity
             onPress={() => router.push("/cart")}
@@ -389,11 +373,6 @@ export default function OrderScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* ══════════════════════════════════
-              LEFT COLUMN — FORM
-          ══════════════════════════════════ */}
-
-          {/* ── Customer Info */}
           <View style={styles.card}>
             <SectionHeader title="Thông tin khách hàng" step={1} />
             <FormInput
@@ -407,7 +386,6 @@ export default function OrderScreen() {
             />
           </View>
 
-          {/* ── Shipping Address */}
           <View style={styles.card}>
             <SectionHeader title="Địa chỉ nhận hàng" step={2} />
 
@@ -472,7 +450,6 @@ export default function OrderScreen() {
             </View>
           </View>
 
-          {/* ── Payment Method */}
           <View style={styles.card}>
             <SectionHeader title="Phương thức thanh toán" step={3} />
 
@@ -504,14 +481,9 @@ export default function OrderScreen() {
               }
             />
           </View>
-
-          {/* ══════════════════════════════════
-              RIGHT COLUMN — ORDER SUMMARY
-          ══════════════════════════════════ */}
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Đơn hàng của bạn</Text>
 
-            {/* Items */}
             {cartLoading ? (
               <ActivityIndicator
                 size="small"
@@ -527,7 +499,6 @@ export default function OrderScreen() {
               ))
             )}
 
-            {/* Totals */}
             <View style={styles.summaryDivider} />
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tạm tính</Text>
@@ -551,7 +522,6 @@ export default function OrderScreen() {
             </View>
           </View>
 
-          {/* ── Submit */}
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
@@ -592,7 +562,6 @@ export default function OrderScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f8f8" },
 
-  // Breadcrumb
   breadcrumb: {
     flexDirection: "row",
     alignItems: "center",
@@ -613,7 +582,6 @@ const styles = StyleSheet.create({
 
   content: { paddingHorizontal: 16, paddingTop: 8, gap: 14 },
 
-  // Cards
   card: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -625,7 +593,6 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  // Section header
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -643,10 +610,8 @@ const styles = StyleSheet.create({
   stepBadgeTxt: { color: "#fff", fontSize: 13, fontWeight: "800" },
   sectionTitle: { fontSize: 15, fontWeight: "700", color: "#1a1a1a" },
 
-  // Row layout
   row: { flexDirection: "row" },
 
-  // Payment
   paymentOption: {
     flexDirection: "row",
     alignItems: "center",
@@ -681,7 +646,6 @@ const styles = StyleSheet.create({
   },
   paymentSubtitle: { fontSize: 12, color: "#888" },
 
-  // Order Summary Card
   summaryCard: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -699,7 +663,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  // Order Item Row
   orderItemRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -735,7 +698,6 @@ const styles = StyleSheet.create({
   orderItemSize: { fontSize: 12, color: "#888" },
   orderItemTotal: { fontSize: 13, fontWeight: "700", color: "#1a1a1a" },
 
-  // Summary totals
   summaryDivider: { height: 1, backgroundColor: "#f0f0f0", marginVertical: 10 },
   summaryRow: {
     flexDirection: "row",
@@ -748,7 +710,6 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 15, fontWeight: "800", color: "#1a1a1a" },
   totalAmount: { fontSize: 20, fontWeight: "900", color: "#1a1a1a" },
 
-  // Submit
   submitBtn: {
     backgroundColor: "#1a1a1a",
     borderRadius: 12,
@@ -772,7 +733,6 @@ const styles = StyleSheet.create({
   },
   backToCartTxt: { fontSize: 14, color: "#555", fontWeight: "500" },
 
-  // Empty
   emptyWrap: {
     flex: 1,
     justifyContent: "center",

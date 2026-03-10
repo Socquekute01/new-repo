@@ -418,7 +418,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
 
-  // ── Header
   header: {
     backgroundColor: "#ffffff",
     borderBottomWidth: 1,
@@ -535,7 +534,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
-  // ── Banner
   bannerContainer: {
     position: "relative",
   },
@@ -587,7 +585,6 @@ const styles = StyleSheet.create({
     width: 18,
   },
 
-  // ── Section Header
   sectionContainer: {
     paddingTop: 40,
     paddingBottom: 16,
@@ -609,7 +606,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // ── Product Grid
   loadingWrap: {
     alignItems: "center",
     paddingVertical: 60,
@@ -631,7 +627,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // ── Product Card
   productCard: {
     width: (SCREEN_WIDTH - 36) / 2,
     backgroundColor: "#ffffff",
@@ -716,7 +711,6 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
 
-  // ── Pagination
   paginationRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -744,7 +738,6 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  // ── Quick View Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -798,7 +791,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // ── Features
   featuresSection: {
     backgroundColor: "#f8f8f8",
     paddingHorizontal: 16,
@@ -839,7 +831,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  // ── Footer
   footer: {
     backgroundColor: "#111111",
     paddingHorizontal: 20,

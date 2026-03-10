@@ -106,11 +106,9 @@ function FilterSheet({
     >
       <View style={styles.sheetOverlay}>
         <View style={styles.sheetCard}>
-          {/* Handle */}
           <View style={styles.sheetHandle} />
 
           <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Header */}
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Filter & Sort</Text>
               <TouchableOpacity onPress={onClose}>
@@ -118,7 +116,6 @@ function FilterSheet({
               </TouchableOpacity>
             </View>
 
-            {/* Sort */}
             <Text style={styles.filterLabel}>Sort By</Text>
             <View style={styles.chipsRow}>
               {SORT_OPTIONS.map((o) => (
@@ -131,7 +128,6 @@ function FilterSheet({
               ))}
             </View>
 
-            {/* Price */}
             <Text style={styles.filterLabel}>Price Range</Text>
             <View style={styles.chipsRow}>
               {PRICE_RANGES.map((o) => (
@@ -146,7 +142,6 @@ function FilterSheet({
               ))}
             </View>
 
-            {/* Category */}
             <Text style={styles.filterLabel}>Category</Text>
             <View style={styles.chipsRow}>
               <Chip
@@ -171,7 +166,6 @@ function FilterSheet({
               ))}
             </View>
 
-            {/* Size */}
             {availableSizes.length > 0 && (
               <>
                 <Text style={styles.filterLabel}>Size</Text>
@@ -201,7 +195,6 @@ function FilterSheet({
             )}
           </ScrollView>
 
-          {/* Footer Buttons */}
           <View style={styles.sheetFooter}>
             <TouchableOpacity onPress={reset} style={styles.resetBtn}>
               <Text style={styles.resetBtnTxt}>Reset</Text>
@@ -389,14 +382,12 @@ export default function ShopScreen() {
   });
   const [sortBy, setSortBy] = useState("default");
 
-  // Sync search param from URL
   useEffect(() => {
     setSearchQuery(params.search || "");
     setCurrentPage(1);
   }, [params.search]);
 
   useEffect(() => {
-    // Replace with real API:
     setTimeout(async () => {
       const data = await productAPI.getAll();
       const cats = await categoryAPI.getAll();
@@ -411,12 +402,10 @@ export default function ShopScreen() {
     setCurrentPage(1);
   }, []);
 
-  // Available sizes
   const availableSizes = [
     ...new Set(products.flatMap((p) => normalizeSizes(p.size))),
   ].sort();
 
-  // Filter
   const filteredProducts = products.filter((product) => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -452,7 +441,6 @@ export default function ShopScreen() {
     return true;
   });
 
-  // Sort
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-asc") return a.price - b.price;
     if (sortBy === "price-desc") return b.price - a.price;
@@ -461,7 +449,6 @@ export default function ShopScreen() {
     return 0;
   });
 
-  // Pagination
   const totalPages = Math.ceil(sortedProducts.length / PRODUCTS_PER_PAGE);
   const currentProducts = sortedProducts.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
@@ -489,14 +476,8 @@ export default function ShopScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Banner */}
             <View style={styles.banner}>
-              <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=70",
-                }}
-                style={styles.bannerImage}
-              />
+              <Image source={{}} style={styles.bannerImage} />
               <View style={styles.bannerOverlay} />
               <View style={styles.bannerContent}>
                 <Text style={styles.bannerTitle}>
@@ -510,9 +491,7 @@ export default function ShopScreen() {
               </View>
             </View>
 
-            {/* Toolbar */}
             <View style={styles.toolbar}>
-              {/* Search */}
               <View style={styles.searchBar}>
                 <Feather name="search" size={16} color="#999" />
                 <TextInput
@@ -533,7 +512,6 @@ export default function ShopScreen() {
                 )}
               </View>
 
-              {/* Filter Button */}
               <TouchableOpacity
                 onPress={() => setFilterVisible(true)}
                 style={styles.filterBtn}
@@ -550,7 +528,6 @@ export default function ShopScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Active Filter Tags */}
             {hasActiveFilters && (
               <ActiveFilterTags
                 filters={filters}
@@ -559,7 +536,6 @@ export default function ShopScreen() {
               />
             )}
 
-            {/* Loading */}
             {loading && (
               <View style={styles.loadingWrap}>
                 <ActivityIndicator size="large" color="#1a1a1a" />
@@ -567,7 +543,6 @@ export default function ShopScreen() {
               </View>
             )}
 
-            {/* Empty */}
             {!loading && sortedProducts.length === 0 && (
               <View style={styles.emptyWrap}>
                 <Feather name="inbox" size={48} color="#ccc" />
@@ -649,7 +624,6 @@ export default function ShopScreen() {
         }
       />
 
-      {/* Filter Bottom Sheet */}
       <FilterSheet
         visible={filterVisible}
         onClose={() => setFilterVisible(false)}
@@ -664,7 +638,6 @@ export default function ShopScreen() {
         availableSizes={availableSizes}
       />
 
-      {/* Quick View Modal */}
       <QuickViewModal
         product={quickViewProduct}
         visible={!!quickViewProduct}
@@ -678,7 +651,6 @@ export default function ShopScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  // Banner
   banner: { height: 200, position: "relative" },
   bannerImage: { width: "100%", height: "100%", resizeMode: "cover" },
   bannerOverlay: {
@@ -705,7 +677,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  // Toolbar
   toolbar: {
     flexDirection: "row",
     alignItems: "center",
@@ -746,7 +717,6 @@ const styles = StyleSheet.create({
   },
   filterBadgeTxt: { color: "#fff", fontSize: 10, fontWeight: "700" },
 
-  // Active Tags
   activeTags: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -772,7 +742,6 @@ const styles = StyleSheet.create({
   },
   activeTagTxt: { color: "#fff", fontSize: 12, fontWeight: "600" },
 
-  // Grid
   gridContent: { paddingBottom: 20 },
   gridRow: {
     paddingHorizontal: 16,
@@ -780,7 +749,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Product Card
   productCard: {
     width: CARD_WIDTH,
     backgroundColor: "#fff",
@@ -853,7 +821,6 @@ const styles = StyleSheet.create({
   },
   lowStock: { fontSize: 11, color: "#dd6b20", fontWeight: "600", marginTop: 3 },
 
-  // Pagination
   paginationRow: {
     flexDirection: "row",
     justifyContent: "center",
@@ -882,13 +849,11 @@ const styles = StyleSheet.create({
   },
   pageNavBtnDisabled: { opacity: 0.35 },
 
-  // Loading / Empty
   loadingWrap: { alignItems: "center", paddingVertical: 60 },
   loadingTxt: { marginTop: 12, color: "#666", fontSize: 14 },
   emptyWrap: { alignItems: "center", paddingVertical: 60, gap: 12 },
   emptyTxt: { fontSize: 16, color: "#999" },
 
-  // Filter Sheet
   sheetOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -970,7 +935,6 @@ const styles = StyleSheet.create({
   },
   applyBtnTxt: { fontSize: 14, fontWeight: "700", color: "#fff" },
 
-  // Quick View Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",

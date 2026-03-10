@@ -19,9 +19,7 @@ import Footer from "@/components/layout/Footer";
 import { productAPI } from "@/api";
 import { useCart } from "@/context/CartContext";
 
-
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("vi-VN", {
@@ -121,7 +119,6 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addToCart } = useCart();
 
-  // Replace with real context:
   const isAuthenticated = false;
   const user: any = null;
   const [product, setProduct] = useState<any>(null);
@@ -138,15 +135,12 @@ export default function ProductDetailScreen() {
   const [comment, setComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
-  // ── Fetch product
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         const data = await productAPI.getById(id);
         setProduct(data.data || data);
-        // await new Promise((r) => setTimeout(r, 600));
-        // setProduct(MOCK_PRODUCT);
       } catch {
         Alert.alert("Lỗi", "Không thể tải sản phẩm");
       } finally {
@@ -157,10 +151,7 @@ export default function ProductDetailScreen() {
     const fetchReviews = async () => {
       try {
         setReviewsLoading(true);
-        // const data = await reviewAPI.getByProduct(id);
-        // setReviews(Array.isArray(data) ? data : []);
         await new Promise((r) => setTimeout(r, 400));
-        // setReviews(MOCK_REVIEWS);
       } catch {
         setReviews([]);
       } finally {
@@ -170,9 +161,6 @@ export default function ProductDetailScreen() {
 
     const checkEligibility = async () => {
       try {
-        // const data = await reviewAPI.canReview(id);
-        // setCanReview(data.canReview);
-        // setReviewEligibilityMessage(data.message || '');
         setCanReview(true);
       } catch {
         setCanReview(false);
@@ -184,7 +172,6 @@ export default function ProductDetailScreen() {
     if (isAuthenticated) checkEligibility();
   }, [id, isAuthenticated]);
 
-  // ── Pre-fill my review
   const myReview = isAuthenticated
     ? reviews.find((rev) => {
         const userId = rev?.user?._id || rev?.user?.id;
@@ -203,7 +190,6 @@ export default function ProductDetailScreen() {
     }
   }, [myReview?._id, myReview]);
 
-  // ── Add to cart
   const handleAddToCart = useCallback(() => {
     if (!selectedSize) {
       Alert.alert(
@@ -217,7 +203,6 @@ export default function ProductDetailScreen() {
     Alert.alert("✓ Đã thêm", `${product.name} đã được thêm vào giỏ hàng.`);
   }, [selectedSize, product, addToCart]);
 
-  // ── Buy now
   const handleBuyNow = useCallback(() => {
     if (!selectedSize) {
       Alert.alert("Chọn size", "Vui lòng chọn size trước khi mua.");
@@ -227,7 +212,6 @@ export default function ProductDetailScreen() {
     router.push("/cart");
   }, [selectedSize, product, quantity, addToCart, router]);
 
-  // ── Submit review
   const handleSubmitReview = async () => {
     if (!isAuthenticated) {
       router.push("/auth");
@@ -239,7 +223,6 @@ export default function ProductDetailScreen() {
     }
     try {
       setIsSubmittingReview(true);
-      // await reviewAPI.createOrUpdate(id, { rating, comment });
       await new Promise((r) => setTimeout(r, 800));
       Alert.alert(
         "Thành công",
@@ -252,7 +235,6 @@ export default function ProductDetailScreen() {
     }
   };
 
-  // ── Loading
   if (loading) {
     return (
       <View style={styles.centerScreen}>
@@ -262,7 +244,6 @@ export default function ProductDetailScreen() {
     );
   }
 
-  // ── Not found
   if (!product) {
     return (
       <View style={styles.centerScreen}>
@@ -284,7 +265,6 @@ export default function ProductDetailScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* ── Breadcrumb */}
         <View style={styles.breadcrumb}>
           <TouchableOpacity
             onPress={() => router.push("/")}
@@ -306,7 +286,6 @@ export default function ProductDetailScreen() {
           </Text>
         </View>
 
-        {/* ── Product Image */}
         <View style={styles.imageWrap}>
           {productImage ? (
             <Image
@@ -327,10 +306,8 @@ export default function ProductDetailScreen() {
         </View>
 
         <View style={styles.infoSection}>
-          {/* ── Title */}
           <Text style={styles.productName}>{product.name}</Text>
 
-          {/* ── Rating */}
           {product.averageRating > 0 && (
             <View style={styles.ratingRow}>
               <StarDisplay rating={product.averageRating} size={16} />
@@ -343,7 +320,6 @@ export default function ProductDetailScreen() {
             </View>
           )}
 
-          {/* ── Stock */}
           <View style={styles.stockRow}>
             <View
               style={[
@@ -363,7 +339,6 @@ export default function ProductDetailScreen() {
             </Text>
           </View>
 
-          {/* ── Price */}
           <View style={styles.priceRow}>
             <Text style={styles.price}>{formatPrice(product.price)}</Text>
             {product.originalPrice && product.originalPrice > product.price && (
@@ -384,7 +359,6 @@ export default function ProductDetailScreen() {
             )}
           </View>
 
-          {/* ── Size Selection */}
           {sizes.length > 0 && (
             <View style={styles.sizeSection}>
               <View style={styles.sizeLabelRow}>
@@ -422,7 +396,6 @@ export default function ProductDetailScreen() {
             </View>
           )}
 
-          {/* ── Add to Cart */}
           <TouchableOpacity
             onPress={handleAddToCart}
             disabled={product.stock <= 0}
@@ -446,7 +419,6 @@ export default function ProductDetailScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* ── Buy Now */}
           <TouchableOpacity
             onPress={handleBuyNow}
             disabled={product.stock <= 0}
@@ -463,14 +435,11 @@ export default function ProductDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ── Divider */}
         <View style={styles.divider} />
 
-        {/* ── Reviews Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Customer Reviews</Text>
 
-          {/* Review List */}
           {reviewsLoading ? (
             <ActivityIndicator
               size="small"
@@ -488,7 +457,6 @@ export default function ProductDetailScreen() {
             ))
           )}
 
-          {/* ── Review Form */}
           <View style={styles.reviewFormCard}>
             <Text style={styles.reviewFormTitle}>
               {myReview ? "Cập nhật đánh giá" : "Viết đánh giá"}
@@ -547,7 +515,6 @@ export default function ProductDetailScreen() {
           </View>
         </View>
 
-        {/* ── Description */}
         {product.description && (
           <>
             <View style={styles.divider} />
@@ -568,7 +535,6 @@ export default function ProductDetailScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  // Center states
   centerScreen: {
     flex: 1,
     justifyContent: "center",
@@ -587,7 +553,6 @@ const styles = StyleSheet.create({
   },
   backBtnTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
 
-  // Breadcrumb
   breadcrumb: {
     flexDirection: "row",
     alignItems: "center",
@@ -605,7 +570,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  // Image
   imageWrap: {
     position: "relative",
     width: SCREEN_WIDTH,
@@ -630,7 +594,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  // Info section
   infoSection: { paddingHorizontal: 20, paddingTop: 20 },
   productName: {
     fontSize: 22,
@@ -640,7 +603,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // Rating
   ratingRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -650,7 +612,6 @@ const styles = StyleSheet.create({
   ratingTxt: { fontSize: 13, color: "#555", fontWeight: "600" },
   reviewCountTxt: { fontSize: 13, color: "#aaa" },
 
-  // Stock
   stockRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -660,7 +621,6 @@ const styles = StyleSheet.create({
   stockDot: { width: 8, height: 8, borderRadius: 4 },
   stockTxt: { fontSize: 13, fontWeight: "600" },
 
-  // Price
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -682,7 +642,6 @@ const styles = StyleSheet.create({
   },
   discountBadgeTxt: { color: "#fff", fontSize: 12, fontWeight: "700" },
 
-  // Size
   sizeSection: { marginBottom: 24 },
   sizeLabelRow: {
     flexDirection: "row",
@@ -720,7 +679,6 @@ const styles = StyleSheet.create({
     borderLeftColor: "transparent",
   },
 
-  // Buttons
   addToCartBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -754,10 +712,8 @@ const styles = StyleSheet.create({
   btnDisabled: { borderColor: "#e5e5e5", backgroundColor: "#f5f5f5" },
   btnTxtDisabled: { color: "#aaa" },
 
-  // Divider
   divider: { height: 8, backgroundColor: "#f5f5f5", marginVertical: 4 },
 
-  // Sections
   section: { paddingHorizontal: 20, paddingVertical: 20 },
   sectionTitle: {
     fontSize: 20,
@@ -766,7 +722,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Reviews
   emptyReviews: { alignItems: "center", paddingVertical: 24, gap: 8 },
   emptyReviewsTxt: { color: "#aaa", fontSize: 14 },
   reviewCard: {
@@ -800,7 +755,6 @@ const styles = StyleSheet.create({
   },
   reviewComment: { fontSize: 14, color: "#555", lineHeight: 20 },
 
-  // Review Form
   reviewFormCard: {
     borderWidth: 1.5,
     borderColor: "#f0f0f0",
@@ -843,7 +797,6 @@ const styles = StyleSheet.create({
   },
   submitReviewTxt: { color: "#fff", fontWeight: "700", fontSize: 14 },
 
-  // Login Prompt
   loginPrompt: {
     flexDirection: "row",
     gap: 10,
@@ -863,6 +816,5 @@ const styles = StyleSheet.create({
   },
   cannotReviewTxt: { fontSize: 13, color: "#555" },
 
-  // Description
   descriptionTxt: { fontSize: 15, color: "#555", lineHeight: 24 },
 });

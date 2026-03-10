@@ -42,7 +42,6 @@ function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
 
   return (
     <View style={styles.cartRow}>
-      {/* Product Image */}
       <TouchableOpacity
         onPress={() => onNavigate(productId)}
         activeOpacity={0.85}
@@ -56,7 +55,6 @@ function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
         )}
       </TouchableOpacity>
 
-      {/* Info */}
       <View style={styles.cartItemInfo}>
         <TouchableOpacity onPress={() => onNavigate(productId)}>
           <Text style={styles.cartItemName} numberOfLines={2}>
@@ -68,7 +66,6 @@ function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
           {formatPrice(item.product.price)}
         </Text>
 
-        {/* Quantity Row */}
         <View style={styles.qtyRow}>
           <TouchableOpacity
             onPress={() => onUpdateQty(productId, item.size, item.quantity - 1)}
@@ -94,7 +91,6 @@ function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
         </View>
       </View>
 
-      {/* Right: Total + Delete */}
       <View style={styles.cartItemRight}>
         <Text style={styles.cartItemTotal}>
           {formatPrice(item.product.price * item.quantity)}
@@ -154,16 +150,12 @@ export default function CartScreen() {
 
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
 
-  // Replace with real context:
   const { isAuthenticated } = useAuth();
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [relatedLoading, setRelatedLoading] = useState(true);
 
-  // Mock cart functions — replace with context:
-
   const getCartCount = () => cartItems.reduce((sum, i) => sum + i.quantity, 0);
 
-  // Fetch related
   useEffect(() => {
     const fetchRelated = async () => {
       try {
@@ -193,7 +185,6 @@ export default function CartScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* ── Title */}
       <View style={styles.titleRow}>
         <Text style={styles.screenTitle}>CART</Text>
         {cartItems.length > 0 && (
@@ -203,14 +194,11 @@ export default function CartScreen() {
         )}
       </View>
 
-      {/* ── Empty State */}
       {cartItems.length === 0 ? (
         <EmptyCart onContinue={() => router.push("/")} />
       ) : (
         <>
-          {/* ── Cart Items */}
           <View style={styles.cartList}>
-            {/* Header */}
             <View style={styles.tableHeader}>
               <Text style={[styles.tableHeaderTxt, { flex: 3 }]}>Product</Text>
               <Text
@@ -239,11 +227,9 @@ export default function CartScreen() {
             ))}
           </View>
 
-          {/* ── Order Summary */}
           <View style={styles.summaryCard}>
             <Text style={styles.summaryTitle}>Order Summary</Text>
 
-            {/* Item breakdown */}
             <View style={styles.summaryRows}>
               {cartItems.map((item) => {
                 const productId = item.product._id || item.product.id;
@@ -263,10 +249,8 @@ export default function CartScreen() {
               })}
             </View>
 
-            {/* Divider */}
             <View style={styles.summaryDivider} />
 
-            {/* Total */}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total</Text>
               <Text style={styles.totalAmount}>
@@ -274,7 +258,6 @@ export default function CartScreen() {
               </Text>
             </View>
 
-            {/* Checkout */}
             <TouchableOpacity
               onPress={handleCheckout}
               style={styles.checkoutBtn}
@@ -283,7 +266,6 @@ export default function CartScreen() {
               <Text style={styles.checkoutBtnTxt}>CHECKOUT</Text>
             </TouchableOpacity>
 
-            {/* Continue Shopping */}
             <TouchableOpacity
               onPress={() => router.push("/")}
               style={styles.continueShoppingBtn}
@@ -295,7 +277,6 @@ export default function CartScreen() {
         </>
       )}
 
-      {/* ── Related Products */}
       {(relatedProducts.length > 0 || relatedLoading) && (
         <View style={styles.relatedSection}>
           <Text style={styles.relatedTitle}>You Might Also Like</Text>
@@ -334,7 +315,6 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 
-  // Title
   titleRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -357,7 +337,6 @@ const styles = StyleSheet.create({
   },
   cartCountTxt: { fontSize: 13, fontWeight: "600", color: "#555" },
 
-  // Cart List
   cartList: {
     marginHorizontal: 16,
     borderWidth: 1,
@@ -383,7 +362,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Cart Row
   cartRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -416,7 +394,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  // Qty
   qtyRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   qtyBtn: {
     width: 28,
@@ -438,7 +415,6 @@ const styles = StyleSheet.create({
   },
   maxStockTxt: { fontSize: 11, color: "#f59e0b", fontWeight: "600" },
 
-  // Cart item right
   cartItemRight: {
     alignItems: "flex-end",
     justifyContent: "space-between",
@@ -447,7 +423,6 @@ const styles = StyleSheet.create({
   cartItemTotal: { fontSize: 14, fontWeight: "800", color: "#1a1a1a" },
   deleteBtn: { padding: 4 },
 
-  // Summary
   summaryCard: {
     marginHorizontal: 16,
     borderWidth: 1,
@@ -481,7 +456,6 @@ const styles = StyleSheet.create({
   totalLabel: { fontSize: 16, fontWeight: "700", color: "#1a1a1a" },
   totalAmount: { fontSize: 22, fontWeight: "900", color: "#1a1a1a" },
 
-  // Checkout button
   checkoutBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -499,7 +473,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 
-  // Continue shopping
   continueShoppingBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -512,7 +485,6 @@ const styles = StyleSheet.create({
   },
   continueShoppingTxt: { fontSize: 14, fontWeight: "600", color: "#555" },
 
-  // Empty
   emptyWrap: {
     alignItems: "center",
     paddingVertical: 60,
@@ -542,7 +514,6 @@ const styles = StyleSheet.create({
   },
   continueBtnTxt: { color: "#fff", fontSize: 15, fontWeight: "700" },
 
-  // Related
   relatedSection: { paddingTop: 8 },
   relatedTitle: {
     fontSize: 18,

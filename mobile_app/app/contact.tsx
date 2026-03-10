@@ -63,7 +63,6 @@ const Contact: React.FC = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
     setTimeout(() => {
       setSubmitStatus("success");
       setIsSubmitting(false);
@@ -95,7 +94,6 @@ const Contact: React.FC = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
         <View style={styles.hero}>
           <Image
             source={{
@@ -150,7 +148,6 @@ const Contact: React.FC = () => {
             ]}
           />
 
-          {/* Contact Form */}
           <View style={styles.formCard}>
             <Text style={styles.formTitle}>Send Us A Message</Text>
 
@@ -231,7 +228,6 @@ const Contact: React.FC = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Map Placeholder */}
           <Text style={[styles.sectionTitle, styles.mapTitle]}>
             Visit Our Store
           </Text>
@@ -300,7 +296,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
-  // Hero
   hero: {
     height: 220,
     justifyContent: "center",
@@ -325,14 +320,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
 
-  // Layout
   content: {
     paddingHorizontal: 20,
     paddingTop: 28,
     paddingBottom: 40,
   },
 
-  // Section headings
   sectionTitle: {
     fontSize: 26,
     fontWeight: "700",
@@ -351,7 +344,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Contact info rows
   infoRow: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -378,7 +370,6 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 
-  // Form card
   formCard: {
     backgroundColor: "#f9fafb",
     borderRadius: 14,
@@ -397,7 +388,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Success banner
   successBanner: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -416,7 +406,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // Form fields
   row: {
     flexDirection: "row",
     gap: 12,
@@ -451,7 +440,6 @@ const styles = StyleSheet.create({
     paddingTop: 11,
   },
 
-  // Submit button
   submitBtn: {
     backgroundColor: "#111827",
     borderRadius: 10,
@@ -471,7 +459,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  // Map
   mapPlaceholder: {
     backgroundColor: "#f3f4f6",
     borderRadius: 14,

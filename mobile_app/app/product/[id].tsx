@@ -19,42 +19,10 @@ import Footer from "@/components/layout/Footer";
 import { productAPI } from "@/api";
 import { useCart } from "@/context/CartContext";
 
-// ─── Replace with your real API & context ────────────────────────────────────
-// import { productAPI, reviewAPI } from '@/services/api';
-// import { useCart } from '@/context/CartContext';
-// import { useAuth } from '@/context/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-const MOCK_PRODUCT = {
-  _id: "1",
-  name: "Classic Black Oversized Tee",
-  price: 450000,
-  originalPrice: 600000,
-  stock: 8,
-  averageRating: 4.3,
-  size: "S, M, L, XL, XXL",
-  description:
-    "Premium heavyweight cotton oversized tee. Drop shoulder construction with a boxy silhouette. Perfect for layering or wearing solo.",
-  images: ["https://via.placeholder.com/600x600/1a1a1a/ffffff?text=Product"],
-};
-const MOCK_REVIEWS = [
-  {
-    _id: "r1",
-    rating: 5,
-    comment: "Chất lượng rất tốt, đúng như mô tả!",
-    user: { name: "Minh Tuấn" },
-  },
-  {
-    _id: "r2",
-    rating: 4,
-    comment: "Vải dày dặn, form đẹp. Sẽ mua thêm.",
-    user: { name: "Thu Hà" },
-  },
-];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -74,7 +42,6 @@ const normalizeSizes = (sizeField: any): string[] => {
   return [];
 };
 
-// ─── STAR RATING DISPLAY ──────────────────────────────────────────────────────
 function StarDisplay({
   rating,
   size = 16,
@@ -98,7 +65,6 @@ function StarDisplay({
   );
 }
 
-// ─── STAR RATING INPUT ────────────────────────────────────────────────────────
 function StarInput({
   rating,
   onRate,
@@ -125,7 +91,6 @@ function StarInput({
   );
 }
 
-// ─── REVIEW CARD ─────────────────────────────────────────────────────────────
 function ReviewCard({ review }: { review: any }) {
   return (
     <View style={styles.reviewCard}>
@@ -151,7 +116,6 @@ function ReviewCard({ review }: { review: any }) {
   );
 }
 
-// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 export default function ProductDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -168,7 +132,7 @@ export default function ProductDetailScreen() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [canReview, setCanReview] = useState<boolean | null>(null);
-  const [reviewEligibilityMessage, setReviewEligibilityMessage] = useState("");
+  const [reviewEligibilityMessage] = useState("");
 
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -237,7 +201,7 @@ export default function ProductDetailScreen() {
       setRating(0);
       setComment("");
     }
-  }, [myReview?._id]);
+  }, [myReview?._id, myReview]);
 
   // ── Add to cart
   const handleAddToCart = useCallback(() => {
@@ -248,11 +212,10 @@ export default function ProductDetailScreen() {
       );
       return;
     }
-    console.log(123)
     addToCart(product, selectedSize, 1);
     setSelectedSize("");
     Alert.alert("✓ Đã thêm", `${product.name} đã được thêm vào giỏ hàng.`);
-  }, [selectedSize, product]);
+  }, [selectedSize, product, addToCart]);
 
   // ── Buy now
   const handleBuyNow = useCallback(() => {
@@ -262,7 +225,7 @@ export default function ProductDetailScreen() {
     }
     addToCart(product, selectedSize, quantity);
     router.push("/cart");
-  }, [selectedSize, product, quantity]);
+  }, [selectedSize, product, quantity, addToCart, router]);
 
   // ── Submit review
   const handleSubmitReview = async () => {
@@ -602,7 +565,6 @@ export default function ProductDetailScreen() {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 

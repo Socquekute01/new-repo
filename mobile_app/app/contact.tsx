@@ -12,35 +12,51 @@ import {
   Linking,
   Platform,
   KeyboardAvoidingView,
+  TextInputProps,
+  ViewStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-// ─── If you have a shared Header/Footer, import them here ───
-// import Header from '../../src/components/header/Header';
-// import Footer from '../../src/components/footer/Footer';
+interface FormData {
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+}
 
-const Contact = () => {
-  const [formData, setFormData] = useState({
+type SubmitStatus = "success" | null;
+
+interface ContactInfoProps {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  lines: string[];
+  onPress?: () => void;
+}
+
+interface FormFieldProps extends TextInputProps {
+  label: string;
+  containerStyle?: ViewStyle;
+}
+
+const Contact: React.FC = () => {
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     phone: "",
     subject: "",
     message: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submitStatus, setSubmitStatus] = useState<SubmitStatus>(null);
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    if (
-      !formData.name ||
-      !formData.email ||
-      !formData.subject ||
-      !formData.message
-    ) {
+    const { name, email, subject, message } = formData;
+    if (!name || !email || !subject || !message) {
       Alert.alert("Missing Fields", "Please fill in all required fields.");
       return;
     }
@@ -63,11 +79,14 @@ const Contact = () => {
       ios: `maps:?q=${encodeURIComponent(address)}`,
       android: `geo:0,0?q=${encodeURIComponent(address)}`,
     });
-    Linking.openURL(url).catch(() =>
-      Linking.openURL(
-        `https://maps.google.com?q=${encodeURIComponent(address)}`,
-      ),
-    );
+
+    if (url) {
+      Linking.openURL(url).catch(() =>
+        Linking.openURL(
+          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`,
+        ),
+      );
+    }
   };
 
   return (
@@ -75,11 +94,8 @@ const Contact = () => {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      {/* Header placeholder — swap with your <Header /> component */}
-      {/* <Header /> */}
-
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* ── Hero ── */}
+        {/* Hero Section */}
         <View style={styles.hero}>
           <Image
             source={{
@@ -96,7 +112,6 @@ const Contact = () => {
         </View>
 
         <View style={styles.content}>
-          {/* ── Contact Info ── */}
           <Text style={styles.sectionTitle}>Get In Touch</Text>
           <Text style={styles.sectionSubtitle}>
             Have a question or feedback? Fill out the form and we'll get back to
@@ -135,7 +150,7 @@ const Contact = () => {
             ]}
           />
 
-          {/* ── Contact Form ── */}
+          {/* Contact Form */}
           <View style={styles.formCard}>
             <Text style={styles.formTitle}>Send Us A Message</Text>
 
@@ -143,8 +158,7 @@ const Contact = () => {
               <View style={styles.successBanner}>
                 <Ionicons name="checkmark-circle" size={20} color="#15803d" />
                 <Text style={styles.successText}>
-                  Thank you! Your message has been sent. We'll get back to you
-                  soon.
+                  Thank you! Your message has been sent.
                 </Text>
               </View>
             )}
@@ -217,7 +231,7 @@ const Contact = () => {
             </TouchableOpacity>
           </View>
 
-          {/* ── Map Section ── */}
+          {/* Map Placeholder */}
           <Text style={[styles.sectionTitle, styles.mapTitle]}>
             Visit Our Store
           </Text>
@@ -232,17 +246,17 @@ const Contact = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Footer placeholder — swap with your <Footer /> component */}
-      {/* <Footer /> */}
     </KeyboardAvoidingView>
   );
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-const ContactInfo = ({ icon, title, lines, onPress }) => {
-  const Wrapper = onPress ? TouchableOpacity : View;
+const ContactInfo: React.FC<ContactInfoProps> = ({
+  icon,
+  title,
+  lines,
+  onPress,
+}) => {
+  const Wrapper = (onPress ? TouchableOpacity : View) as any;
   return (
     <Wrapper
       style={styles.infoRow}
@@ -264,8 +278,13 @@ const ContactInfo = ({ icon, title, lines, onPress }) => {
   );
 };
 
-const FormField = ({ label, style, multiline, ...rest }) => (
-  <View style={[styles.fieldWrapper, style]}>
+const FormField: React.FC<FormFieldProps> = ({
+  label,
+  containerStyle,
+  multiline,
+  ...rest
+}) => (
+  <View style={[styles.fieldWrapper, containerStyle]}>
     <Text style={styles.label}>{label}</Text>
     <TextInput
       style={[styles.input, multiline && styles.textAreaInput]}
@@ -275,9 +294,6 @@ const FormField = ({ label, style, multiline, ...rest }) => (
     />
   </View>
 );
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

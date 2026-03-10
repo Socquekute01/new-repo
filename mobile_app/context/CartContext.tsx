@@ -1,318 +1,329 @@
-import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { useAuth } from './AuthContext';
-import { cartAPI, cartItemAPI } from '@/api';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  ReactNode,
+} from "react";
+import { useAuth } from "./AuthContext";
+import { cartAPI, cartItemAPI } from "@/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const CartContext = createContext();
+// --- 1. Định nghĩa các Interface ---
+export interface Product {
+  _id?: string;
+  id?: string;
+  name: string;
+  price: number;
+  image?: string;
+  // Thêm các thuộc tính khác của product nếu cần
+}
+
+export interface CartItem {
+  product: Product;
+  size: string;
+  quantity: number;
+}
+
+interface CartContextType {
+  cartItems: CartItem[];
+  addToCart: (
+    product: Product,
+    size: string,
+    quantity?: number,
+  ) => Promise<void>;
+  removeFromCart: (productId: string, size: string) => Promise<void>;
+  updateQuantity: (
+    productId: string,
+    size: string,
+    quantity: number,
+  ) => Promise<void>;
+  clearCart: () => Promise<void>;
+  getCartTotal: () => number;
+  getCartItemsCount: () => number;
+  isInitialized: boolean;
+}
+
+// --- 2. Khởi tạo Context với kiểu dữ liệu ---
+const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) {
-        throw new Error('useCart must be used within a CartProvider');
-    }
-    return context;
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
 };
 
-export const CartProvider = ({ children }) => {
-    const { user, isAuthenticated } = useAuth();
-    const prevUserIdRef = useRef(null);
-    const [backendCartId, setBackendCartId] = useState(null);
+interface CartProviderProps {
+  children: ReactNode;
+}
 
-    const getCartKey = () => {
-        return isAuthenticated && user ? `cart_${user._id || user.id}` : 'cart_guest';
+export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
+  const prevUserIdRef = useRef<string | null>(null);
+  const [backendCartId, setBackendCartId] = useState<string | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+
+  // Helper lấy ID nhất quán từ object product
+  const getPid = (p: Product) => p._id || p.id || "";
+
+  const getCartKey = () => {
+    return isAuthenticated && user
+      ? `cart_${user._id || user.id}`
+      : "cart_guest";
+  };
+
+  // 1. Khởi tạo giỏ hàng từ AsyncStorage
+  useEffect(() => {
+    const initCart = async () => {
+      const key = getCartKey();
+      const savedCart = await AsyncStorage.getItem(key);
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
+      }
+      setIsInitialized(true);
     };
+    initCart();
+  }, [isAuthenticated, user]);
 
-    const [cartItems, setCartItems] = useState(() => {
-        // Initialize from localStorage with user-specific key
-        const savedCart = localStorage.getItem(getCartKey());
-        return savedCart ? JSON.parse(savedCart) : [];
-    });
+  // 2. Lưu giỏ hàng mỗi khi thay đổi
+  useEffect(() => {
+    if (isInitialized) {
+      AsyncStorage.setItem(getCartKey(), JSON.stringify(cartItems));
+    }
+  }, [cartItems, isInitialized]);
 
-    // Save cart to localStorage whenever it changes
-    useEffect(() => {
-        localStorage.setItem(getCartKey(), JSON.stringify(cartItems));
-    }, [cartItems]);
+  const syncToBackend = async (items: CartItem[]) => {
+    if (!isAuthenticated || !user || !backendCartId) return;
+    try {
+      const response = await cartItemAPI.getByCart(backendCartId);
+      const backendItems: any[] = Array.isArray(response)
+        ? response
+        : response.data || [];
 
-    // Sync with backend when user is authenticated
-    const syncToBackend = async (items) => {
-        if (!isAuthenticated || !user || !backendCartId) return;
-
-        try {
-            console.log('🔄 Syncing to backend...');
-            const response = await cartItemAPI.getByCart(backendCartId);
-            const backendItems = Array.isArray(response) ? response : (response.data || []);
-
-            // Add or update each item
-            for (const item of items) {
-                const productId = item.product._id || item.product.id;
-                const existing = backendItems.find((bi) => {
-                    const backendProductId = typeof bi.product === 'object'
-                        ? (bi.product._id || bi.product.id)
-                        : bi.product;
-                    return backendProductId === productId && bi.size === item.size;
-                });
-
-                if (existing) {
-                    await cartItemAPI.updateItem(existing._id, item.quantity, item.product.price);
-                } else {
-                    await cartItemAPI.addItem(backendCartId, productId, item.quantity, item.product.price, item.size);
-                }
-            }
-            console.log('✅ Synced to backend');
-        } catch (error) {
-            console.error('❌ Error syncing to backend:', error);
-        }
-    };
-
-    // Load cart from backend
-    const loadFromBackend = async () => {
-        if (!isAuthenticated || !user) return [];
-
-        try {
-            console.log('📥 Loading cart from backend...');
-            const response = await cartAPI.getMyCart();
-
-            if (response.success) {
-                const { cart, items } = response;
-                setBackendCartId(cart._id);
-
-                const formatted = items.map((item) => ({
-                    product: item.product,
-                    size: item.size || 'M',
-                    quantity: item.quantity,
-                }));
-
-                console.log('✅ Loaded from backend:', formatted.length, 'items');
-                return formatted;
-            }
-            return [];
-        } catch (error) {
-            console.error('❌ Error loading from backend:', error);
-            return [];
-        }
-    };
-
-    // Load and merge cart ONLY when user ID actually changes (login/logout)
-    useEffect(() => {
-        const currentUserId = user?._id || user?.id || null;
-
-        // Check if user ID actually changed
-        if (prevUserIdRef.current !== currentUserId) {
-            if (isAuthenticated && user) {
-                console.log('🔐 User logged in, merging carts...');
-                // User just logged in - load from backend first, then merge with guest cart
-                loadFromBackend().then((backendItems) => {
-                    const guestCart = localStorage.getItem('cart_guest');
-                    const userCartKey = `cart_${currentUserId}`;
-
-                    console.log('Guest cart items:', guestCart ? JSON.parse(guestCart).length : 0);
-                    console.log('Backend cart items:', backendItems.length);
-
-                    let mergedCart = [...backendItems];
-
-                    if (guestCart) {
-                        const guestItems = JSON.parse(guestCart);
-
-                        guestItems.forEach(guestItem => {
-                            const guestProductId = guestItem.product._id || guestItem.product.id;
-                            const existingIndex = mergedCart.findIndex(item => {
-                                const itemProductId = item.product._id || item.product.id;
-                                return itemProductId === guestProductId && item.size === guestItem.size;
-                            });
-
-                            if (existingIndex > -1) {
-                                mergedCart[existingIndex].quantity += guestItem.quantity;
-                            } else {
-                                mergedCart.push(guestItem);
-                            }
-                        });
-
-                        // Clear guest cart after merging
-                        localStorage.setItem('cart_guest', JSON.stringify([]));
-                    }
-
-                    console.log('Merged cart items:', mergedCart.length);
-                    setCartItems(mergedCart);
-
-                    // Sync merged cart to backend
-                    if (mergedCart.length > backendItems.length) {
-                        setTimeout(() => syncToBackend(mergedCart), 500);
-                    }
-                });
-            } else {
-                console.log('👤 User logged out, switching to guest cart');
-                setBackendCartId(null);
-                setCartItems([]);
-                localStorage.setItem('cart_guest', JSON.stringify([]));
-            }
-
-            prevUserIdRef.current = currentUserId;
-        }
-    }, [user, isAuthenticated]);
-
-    const addToCart = async (product, size, quantity = 1) => {
-        console.log('➕ addToCart called:', { product: product.name, size, quantity });
-
-        const productId = product._id || product.id;
-
-        setCartItems((prevItems) => {
-            const existingItemIndex = prevItems.findIndex(
-                (item) => {
-                    const itemProductId = item.product._id || item.product.id;
-                    return itemProductId === productId && item.size === size;
-                }
-            );
-
-            let updatedItems;
-            if (existingItemIndex > -1) {
-                updatedItems = [...prevItems];
-                const oldQty = updatedItems[existingItemIndex].quantity;
-                updatedItems[existingItemIndex].quantity += quantity;
-                console.log(`📦 Updated existing item: ${oldQty} + ${quantity} = ${updatedItems[existingItemIndex].quantity}`);
-            } else {
-                console.log(`🆕 Adding new item with quantity: ${quantity}`);
-                updatedItems = [...prevItems, { product, size, quantity }];
-            }
-
-            return updatedItems;
+      for (const item of items) {
+        const productId = getPid(item.product);
+        const existing = backendItems.find((bi) => {
+          const bPid =
+            typeof bi.product === "object" ? getPid(bi.product) : bi.product;
+          return bPid === productId && bi.size === item.size;
         });
 
-        // Sync to backend if authenticated
-        if (isAuthenticated && user) {
-            try {
-                if (!backendCartId) {
-                    const response = await cartAPI.getMyCart();
-                    if (response.success) {
-                        setBackendCartId(response.cart._id);
-                        await cartItemAPI.addItem(response.cart._id, productId, quantity, product.price, size);
-                    }
-                } else {
-                    await cartItemAPI.addItem(backendCartId, productId, quantity, product.price, size);
-                }
-                console.log('✅ Added to backend');
-            } catch (error) {
-                console.error('❌ Error adding to backend:', error);
-            }
-        }
-    };
-    const removeFromCart = async (productId, size) => {
-        console.log('🗑️ removeFromCart called:', { productId, size });
-
-        setCartItems((prevItems) =>
-            prevItems.filter((item) => {
-                const itemProductId = item.product._id || item.product.id;
-                return !(itemProductId === productId && item.size === size);
-            })
-        );
-
-        // Remove from backend if authenticated
-        if (isAuthenticated && user && backendCartId) {
-            try {
-                console.log('🔍 Finding item to delete in backend...');
-                const response = await cartItemAPI.getByCart(backendCartId);
-                const backendItems = Array.isArray(response) ? response : (response.data || []);
-
-                console.log('Backend items:', backendItems.length);
-
-                const itemToDelete = backendItems.find((bi) => {
-                    // Handle both populated (object) and unpopulated (string) product
-                    const backendProductId = typeof bi.product === 'object'
-                        ? (bi.product._id || bi.product.id)
-                        : bi.product;
-                    const matches = backendProductId === productId && bi.size === size;
-
-                    if (matches) {
-                        console.log('✅ Found matching item:', bi._id);
-                    }
-
-                    return matches;
-                });
-
-                if (itemToDelete) {
-                    console.log('🗑️ Deleting item from backend:', itemToDelete._id);
-                    await cartItemAPI.deleteItem(itemToDelete._id);
-                    console.log('✅ Removed from backend successfully');
-                } else {
-                    console.log('⚠️ Item not found in backend');
-                }
-            } catch (error) {
-                console.error('❌ Error removing from backend:', error);
-                console.error('Error details:', error.response?.data || error.message);
-            }
+        if (existing) {
+          await cartItemAPI.updateItem(
+            existing._id,
+            item.quantity,
+            item.product.price,
+          );
         } else {
-            console.log('ℹ️ Not authenticated or no backend cart, skipping backend removal');
+          await cartItemAPI.addItem(
+            backendCartId,
+            productId,
+            item.quantity,
+            item.product.price,
+            item.size,
+          );
         }
-    };
+      }
+    } catch (error) {
+      console.error("❌ Sync error:", error);
+    }
+  };
 
-    const updateQuantity = async (productId, size, quantity) => {
-        console.log('📝 updateQuantity called:', { productId, size, quantity });
+  const loadFromBackend = async (): Promise<CartItem[]> => {
+    if (!isAuthenticated || !user) return [];
+    try {
+      const response = await cartAPI.getMyCart();
+      if (response.success) {
+        setBackendCartId(response.cart._id);
+        return response.items.map((item: any) => ({
+          product: item.product,
+          size: item.size || "M",
+          quantity: item.quantity,
+        }));
+      }
+      return [];
+    } catch (error) {
+      return [];
+    }
+  };
 
-        if (quantity < 1) {
-            removeFromCart(productId, size);
-            return;
-        }
+  useEffect(() => {
+    const handleAuthChange = async () => {
+      const currentUserId = user?._id || user?.id || null;
+      if (prevUserIdRef.current !== currentUserId) {
+        if (isAuthenticated && user) {
+          const backendItems = await loadFromBackend();
+          const guestCartRaw = await AsyncStorage.getItem("cart_guest");
+          const guestItems: CartItem[] = guestCartRaw
+            ? JSON.parse(guestCartRaw)
+            : [];
 
-        setCartItems((prevItems) =>
-            prevItems.map((item) => {
-                const itemProductId = item.product._id || item.product.id;
-                return itemProductId === productId && item.size === size
-                    ? { ...item, quantity }
-                    : item;
-            })
-        );
+          let mergedCart = [...backendItems];
 
-        // Update in backend if authenticated
-        if (isAuthenticated && user && backendCartId) {
-            try {
-                const response = await cartItemAPI.getByCart(backendCartId);
-                const backendItems = Array.isArray(response) ? response : (response.data || []);
+          guestItems.forEach((guestItem) => {
+            const guestPid = getPid(guestItem.product);
+            const existingIndex = mergedCart.findIndex(
+              (item) =>
+                getPid(item.product) === guestPid &&
+                item.size === guestItem.size,
+            );
 
-                const itemToUpdate = backendItems.find((bi) => {
-                    const backendProductId = typeof bi.product === 'object'
-                        ? (bi.product._id || bi.product.id)
-                        : bi.product;
-                    return backendProductId === productId && bi.size === size;
-                });
-
-                if (itemToUpdate) {
-                    await cartItemAPI.updateItem(itemToUpdate._id, quantity, itemToUpdate.price);
-                    console.log('✅ Updated in backend');
-                } else {
-                    console.log('⚠️ Item not found in backend for update');
-                }
-            } catch (error) {
-                console.error('❌ Error updating in backend:', error);
-                console.error('Error details:', error.response?.data || error.message);
+            if (existingIndex > -1) {
+              mergedCart[existingIndex].quantity += guestItem.quantity;
+            } else {
+              mergedCart.push(guestItem);
             }
+          });
+
+          await AsyncStorage.setItem("cart_guest", JSON.stringify([]));
+          setCartItems(mergedCart);
+
+          if (mergedCart.length > backendItems.length) {
+            setTimeout(() => syncToBackend(mergedCart), 500);
+          }
+        } else {
+          setBackendCartId(null);
+          setCartItems([]);
+          await AsyncStorage.setItem("cart_guest", JSON.stringify([]));
         }
+        prevUserIdRef.current = currentUserId;
+      }
     };
+    handleAuthChange();
+  }, [user, isAuthenticated]);
 
-    const clearCart = () => {
-        setCartItems([]);
-    };
+  const addToCart = async (
+    product: Product,
+    size: string,
+    quantity: number = 1,
+  ) => {
+    const productId = getPid(product);
 
-    const getCartTotal = () => {
-        return cartItems.reduce((total, item) => {
-            return total + item.product.price * item.quantity;
-        }, 0);
-    };
+    setCartItems((prevItems) => {
+      const existingIndex = prevItems.findIndex(
+        (item) => getPid(item.product) === productId && item.size === size,
+      );
 
-    const getCartItemsCount = () => {
-        return cartItems.reduce((total, item) => total + item.quantity, 0);
-    };
+      if (existingIndex > -1) {
+        const updated = [...prevItems];
+        updated[existingIndex].quantity += quantity;
+        return updated;
+      }
+      return [...prevItems, { product, size, quantity }];
+    });
 
-    return (
-        <CartContext.Provider
-            value={{
-                cartItems,
-                addToCart,
-                removeFromCart,
-                updateQuantity,
-                clearCart,
-                getCartTotal,
-                getCartItemsCount,
-            }}
-        >
-            {children}
-        </CartContext.Provider>
+    if (isAuthenticated && user) {
+      try {
+        let currentId = backendCartId;
+        if (!currentId) {
+          const res = await cartAPI.getMyCart();
+          if (res.success) {
+            currentId = res.cart._id;
+            setBackendCartId(currentId);
+          }
+        }
+        if (currentId) {
+          await cartItemAPI.addItem(
+            currentId,
+            productId,
+            quantity,
+            product.price,
+            size,
+          );
+        }
+      } catch (error) {
+        console.error("❌ Backend add error:", error);
+      }
+    }
+  };
+
+  const removeFromCart = async (productId: string, size: string) => {
+    setCartItems((prev) =>
+      prev.filter((i) => !(getPid(i.product) === productId && i.size === size)),
     );
+
+    if (isAuthenticated && user && backendCartId) {
+      try {
+        const response = await cartItemAPI.getByCart(backendCartId);
+        const bItems: any[] = Array.isArray(response)
+          ? response
+          : response.data || [];
+        const toDelete = bItems.find((bi) => {
+          const bPid =
+            typeof bi.product === "object" ? getPid(bi.product) : bi.product;
+          return bPid === productId && bi.size === size;
+        });
+        if (toDelete) await cartItemAPI.deleteItem(toDelete._id);
+      } catch (error) {
+        console.error("❌ Backend remove error:", error);
+      }
+    }
+  };
+
+  const updateQuantity = async (
+    productId: string,
+    size: string,
+    quantity: number,
+  ) => {
+    if (quantity < 1) {
+      await removeFromCart(productId, size);
+      return;
+    }
+
+    setCartItems((prev) =>
+      prev.map((item) =>
+        getPid(item.product) === productId && item.size === size
+          ? { ...item, quantity }
+          : item,
+      ),
+    );
+
+    if (isAuthenticated && user && backendCartId) {
+      try {
+        const response = await cartItemAPI.getByCart(backendCartId);
+        const bItems: any[] = Array.isArray(response)
+          ? response
+          : response.data || [];
+        const toUpdate = bItems.find((bi) => {
+          const bPid =
+            typeof bi.product === "object" ? getPid(bi.product) : bi.product;
+          return bPid === productId && bi.size === size;
+        });
+        if (toUpdate)
+          await cartItemAPI.updateItem(toUpdate._id, quantity, toUpdate.price);
+      } catch (error) {
+        console.error("❌ Backend update error:", error);
+      }
+    }
+  };
+
+  const clearCart = async () => {
+    setCartItems([]);
+    await AsyncStorage.removeItem(getCartKey());
+  };
+
+  const getCartTotal = () =>
+    cartItems.reduce((t, i) => t + i.product.price * i.quantity, 0);
+  const getCartItemsCount = () => cartItems.reduce((t, i) => t + i.quantity, 0);
+
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        getCartTotal,
+        getCartItemsCount,
+        isInitialized,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
 };

@@ -17,7 +17,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function Header() {
   const router = useRouter();
-  const { user, isAuthenticated, onLogout } = useAuth();
+  const { user, logout } = useAuth();
   const { getCartItemsCount } = useCart();
   const [searchQuery, setSearchQuery] = useState("");
   const cartCount = getCartItemsCount();
@@ -26,7 +26,7 @@ export default function Header() {
 
   const menuItems = ["SHOP", "CONTACT", "ABOUT", "BEST SELLER"];
   const onNavigate = (screen: string, params?: any) => {
-    router.push("/" + screen);
+    router.push(("/" + screen) as any);
   };
 
   const handleSearch = () => {
@@ -150,7 +150,7 @@ export default function Header() {
               { borderTopWidth: 1, borderTopColor: "#f0f0f0" },
             ]}
             onPress={() => {
-              onLogout?.();
+              logout?.();
               setUserMenuOpen(false);
             }}
           >

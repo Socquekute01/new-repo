@@ -8,7 +8,6 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
   FlatList,
   Image,
   ScrollView,
@@ -18,72 +17,6 @@ import {
   View,
 } from "react-native";
 
-// ─── Replace with your real context & API ────────────────────────────────────
-// import { useCart } from '@/context/CartContext';
-// import { useAuth } from '@/context/AuthContext';
-// import { productAPI } from '@/services/api';
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-const MOCK_CART_ITEMS = [
-  {
-    product: {
-      _id: "1",
-      name: "Classic Black Tee",
-      price: 450000,
-      stock: 10,
-      images: ["https://via.placeholder.com/200/111/fff?text=Tee"],
-    },
-    size: "M",
-    quantity: 2,
-  },
-  {
-    product: {
-      _id: "2",
-      name: "Limited Edition Hoodie",
-      price: 1200000,
-      stock: 3,
-      images: ["https://via.placeholder.com/200/333/fff?text=Hoodie"],
-    },
-    size: "L",
-    quantity: 1,
-  },
-];
-const MOCK_RELATED = [
-  {
-    _id: "r1",
-    name: "Cargo Shorts",
-    price: 680000,
-    images: ["https://via.placeholder.com/200/444/fff?text=Cargo"],
-  },
-  {
-    _id: "r2",
-    name: "Drop Tee",
-    price: 320000,
-    images: ["https://via.placeholder.com/200/555/fff?text=Drop"],
-  },
-  {
-    _id: "r3",
-    name: "Vintage Pants",
-    price: 980000,
-    images: ["https://via.placeholder.com/200/222/fff?text=Pants"],
-  },
-  {
-    _id: "r4",
-    name: "Graphic Shirt",
-    price: 550000,
-    images: ["https://via.placeholder.com/200/666/fff?text=Shirt"],
-  },
-  {
-    _id: "r5",
-    name: "Bomber Jacket",
-    price: 1500000,
-    images: ["https://via.placeholder.com/200/777/fff?text=Jacket"],
-  },
-];
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -91,7 +24,6 @@ const formatPrice = (price: number) =>
     minimumFractionDigits: 0,
   }).format(price);
 
-// ─── CART ITEM ROW ────────────────────────────────────────────────────────────
 function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
   const productId = item.product._id || item.product.id;
   const productImage = item.product.images?.[0] || item.product.image;
@@ -179,7 +111,6 @@ function CartItemRow({ item, onRemove, onUpdateQty, onNavigate }: any) {
   );
 }
 
-// ─── RELATED PRODUCT CARD ─────────────────────────────────────────────────────
 function RelatedCard({ product, onPress }: any) {
   const productImage = product.images?.[0] || product.image;
   return (
@@ -203,7 +134,6 @@ function RelatedCard({ product, onPress }: any) {
   );
 }
 
-// ─── EMPTY CART ───────────────────────────────────────────────────────────────
 function EmptyCart({ onContinue }: { onContinue: () => void }) {
   return (
     <View style={styles.emptyWrap}>
@@ -219,7 +149,6 @@ function EmptyCart({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-// ─── MAIN CART SCREEN ─────────────────────────────────────────────────────────
 export default function CartScreen() {
   const router = useRouter();
 
@@ -402,7 +331,6 @@ export default function CartScreen() {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 

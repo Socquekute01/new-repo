@@ -11,17 +11,41 @@ import {
   Modal,
   Pressable,
   useWindowDimensions,
+  ViewStyle,
 } from "react-native";
 import { Heart, X, ChevronRight, Flame } from "lucide-react-native";
-import { useNavigation } from "@react-navigation/native";
 import { productAPI, categoryAPI } from "@/api";
 import { useRouter } from "expo-router";
+import Footer from "@/components/layout/Footer";
 
-// import Header from '../../src/components/header/Header';
-// import Footer from '../../src/components/footer/Footer';
-// import QuickViewModal from '../../src/components/QuickViewModal';
+interface Category {
+  _id?: string;
+  id?: string;
+  name: string;
+}
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+interface Product {
+  _id?: string;
+  id?: string;
+  name: string;
+  price: number;
+  originalPrice: number;
+  images?: string[];
+  image?: string;
+  totalSold?: number;
+  stock: number;
+  category?: string | Category;
+  size?: string | string[];
+  description?: string;
+}
+
+interface Filters {
+  priceRange: string;
+  category: string;
+  size: string;
+  color: string;
+}
+
 const PRODUCTS_PER_PAGE = 8;
 
 const PRICE_RANGES = [
@@ -40,15 +64,14 @@ const SORT_OPTIONS = [
   { label: "Name Z–A", value: "name-desc" },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const formatPrice = (price) =>
+const formatPrice = (price: number): string =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
     minimumFractionDigits: 0,
   }).format(price);
 
-const normalizeSizes = (sizeField) => {
+const normalizeSizes = (sizeField?: string | string[]): string[] => {
   if (!sizeField) return [];
   if (Array.isArray(sizeField))
     return sizeField
@@ -62,8 +85,18 @@ const normalizeSizes = (sizeField) => {
   return [];
 };
 
-// ─── Filter Sheet ─────────────────────────────────────────────────────────────
-const FilterSheet = ({
+interface FilterSheetProps {
+  visible: boolean;
+  onClose: () => void;
+  filters: Filters;
+  onFilterChange: (name: keyof Filters, value: string) => void;
+  categories: Category[];
+  availableSizes: string[];
+  sortBy: string;
+  onSortChange: (value: string) => void;
+}
+
+const FilterSheet: React.FC<FilterSheetProps> = ({
   visible,
   onClose,
   filters,
@@ -73,14 +106,21 @@ const FilterSheet = ({
   sortBy,
   onSortChange,
 }) => {
-  const Section = ({ title, children }) => (
+  const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
+    title,
+    children,
+  }) => (
     <View style={fs.section}>
       <Text style={fs.sectionTitle}>{title}</Text>
       <View style={fs.chips}>{children}</View>
     </View>
   );
 
-  const Chip = ({ label, active, onPress }) => (
+  const Chip: React.FC<{
+    label: string;
+    active: boolean;
+    onPress: () => void;
+  }> = ({ label, active, onPress }) => (
     <TouchableOpacity
       style={[fs.chip, active && fs.chipActive]}
       onPress={onPress}
@@ -126,7 +166,7 @@ const FilterSheet = ({
                 onPress={() => onFilterChange("category", "all")}
               />
               {categories.map((cat) => {
-                const id = cat._id || cat.id;
+                const id = (cat._id || cat.id) as string;
                 return (
                   <Chip
                     key={id}
@@ -181,70 +221,36 @@ const FilterSheet = ({
   );
 };
 
-const fs = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
-  sheet: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 32,
-    maxHeight: "80%",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: "#111" },
-  section: { marginBottom: 20 },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#6b7280",
-    marginBottom: 10,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#fff",
-  },
-  chipActive: { backgroundColor: "#111827", borderColor: "#111827" },
-  chipText: { fontSize: 13, color: "#374151" },
-  chipTextActive: { color: "#fff", fontWeight: "600" },
-  applyBtn: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  applyText: { color: "#fff", fontWeight: "700", fontSize: 16 },
-});
+interface ActiveFiltersProps {
+  filters: Filters;
+  categories: Category[];
+  onFilterChange: (name: keyof Filters, value: string) => void;
+  onClearAll: () => void;
+}
 
-// ─── Active Filter Tags ────────────────────────────────────────────────────────
-const ActiveFilters = ({ filters, categories, onFilterChange, onClearAll }) => {
-  const tags = [];
+const ActiveFilters: React.FC<ActiveFiltersProps> = ({
+  filters,
+  categories,
+  onFilterChange,
+  onClearAll,
+}) => {
+  const tags: { key: keyof Filters; label: string }[] = [];
+
   if (filters.category !== "all") {
     const cat = categories.find((c) => (c._id || c.id) === filters.category);
     tags.push({ key: "category", label: cat?.name || "Category" });
   }
   if (filters.priceRange !== "all") {
-    const map = {
+    const map: Record<string, string> = {
       "0-300": "Under 300K",
       "300-500": "300K–500K",
       "500-1000": "500K–1M",
       "1000+": "Over 1M",
     };
-    tags.push({ key: "priceRange", label: map[filters.priceRange] });
+    tags.push({
+      key: "priceRange",
+      label: map[filters.priceRange] || filters.priceRange,
+    });
   }
   if (filters.size !== "all")
     tags.push({ key: "size", label: `SIZE ${filters.size.toUpperCase()}` });
@@ -279,31 +285,16 @@ const ActiveFilters = ({ filters, categories, onFilterChange, onClearAll }) => {
   );
 };
 
-const aft = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingBottom: 12 },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  label: { fontSize: 13, fontWeight: "600", color: "#3b82f6" },
-  clearAll: { fontSize: 13, color: "#3b82f6", fontWeight: "500" },
-  tags: { flexDirection: "row", gap: 8 },
-  tag: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "#3b82f6",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-  },
-  tagText: { fontSize: 12, color: "#fff", fontWeight: "600" },
-});
+interface ProductCardProps {
+  product: Product;
+  onPress: (id: string) => void;
+  onQuickView: (product: Product) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (id: string) => void;
+  cardWidth: number;
+}
 
-// ─── Product Card ─────────────────────────────────────────────────────────────
-const ProductCard = ({
+const ProductCard: React.FC<ProductCardProps> = ({
   product,
   onPress,
   onQuickView,
@@ -311,7 +302,7 @@ const ProductCard = ({
   onToggleFavorite,
   cardWidth,
 }) => {
-  const productId = product._id || product.id;
+  const productId = (product._id || product.id) as string;
   const productImage = product.images?.[0] || product.image;
 
   return (
@@ -331,7 +322,7 @@ const ProductCard = ({
           <View style={pc.imagePlaceholder} />
         )}
 
-        {product.totalSold > 0 && (
+        {product.totalSold && product.totalSold > 0 && (
           <View style={pc.badge}>
             <Flame size={11} color="#fff" />
             <Text style={pc.badgeText}>{product.totalSold} sold</Text>
@@ -384,95 +375,17 @@ const ProductCard = ({
   );
 };
 
-const pc = StyleSheet.create({
-  card: { marginBottom: 20 },
-  imageWrap: {
-    backgroundColor: "#f3f4f6",
-    borderRadius: 12,
-    overflow: "hidden",
-    height: 200,
-    marginBottom: 10,
-  },
-  image: { width: "100%", height: "100%" },
-  imagePlaceholder: { flex: 1, backgroundColor: "#e5e7eb" },
-  badge: {
-    position: "absolute",
-    top: 8,
-    left: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    backgroundColor: "#ef4444",
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
-  heartBtn: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    gap: 6,
-    padding: 10,
-    backgroundColor: "rgba(0,0,0,0.55)",
-  },
-  overlayBtnLight: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingVertical: 7,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  overlayBtnLightText: { fontSize: 11, fontWeight: "700", color: "#111" },
-  overlayBtnDark: {
-    flex: 1,
-    backgroundColor: "#111",
-    borderWidth: 1.5,
-    borderColor: "#fff",
-    paddingVertical: 7,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  overlayBtnDarkText: { fontSize: 11, fontWeight: "700", color: "#fff" },
-  name: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
-    lineHeight: 18,
-  },
-  priceRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  price: { fontSize: 15, fontWeight: "700", color: "#111827" },
-  originalPrice: {
-    fontSize: 12,
-    color: "#9ca3af",
-    textDecorationLine: "line-through",
-  },
-  outOfStock: {
-    fontSize: 12,
-    color: "#ef4444",
-    fontWeight: "600",
-    marginTop: 4,
-  },
-});
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
   if (totalPages <= 1) return null;
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
   return (
@@ -510,43 +423,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   );
 };
 
-const pag = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    gap: 6,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-  },
-  btn: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  btnActive: { backgroundColor: "#111827", borderColor: "#111827" },
-  btnDisabled: { opacity: 0.35 },
-  btnText: { fontSize: 14, color: "#374151", fontWeight: "600" },
-  btnTextActive: { color: "#fff" },
-});
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function BestSeller() {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState(new Set());
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [filterSheetVisible, setFilterSheetVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState("default");
-  const [filters, setFilters] = useState({
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
+    null,
+  );
+  const [filterSheetVisible, setFilterSheetVisible] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortBy, setSortBy] = useState<string>("default");
+  const [filters, setFilters] = useState<Filters>({
     priceRange: "all",
     category: "all",
     size: "all",
@@ -566,7 +457,9 @@ export default function BestSeller() {
           categoryAPI.getAll(),
         ]);
         setProducts(productsData || []);
-        setCategories(categoriesData?.data || categoriesData || []);
+
+        const rawCats = categoriesData?.data || categoriesData || [];
+        setCategories(rawCats);
       } catch (err) {
         console.error("Fetch error:", err);
       } finally {
@@ -575,12 +468,15 @@ export default function BestSeller() {
     })();
   }, []);
 
-  const handleFilterChange = useCallback((name, value) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
-    setCurrentPage(1);
-  }, []);
+  const handleFilterChange = useCallback(
+    (name: keyof Filters, value: string) => {
+      setFilters((prev) => ({ ...prev, [name]: value }));
+      setCurrentPage(1);
+    },
+    [],
+  );
 
-  const toggleFavorite = useCallback((id) => {
+  const toggleFavorite = useCallback((id: string) => {
     setFavorites((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -588,11 +484,11 @@ export default function BestSeller() {
     });
   }, []);
 
-  const availableSizes = [
-    ...new Set(
+  const availableSizes = Array.from(
+    new Set(
       products.filter((p) => p.size).flatMap((p) => normalizeSizes(p.size)),
     ),
-  ].sort();
+  ).sort();
 
   const filteredProducts = products.filter((p) => {
     if (filters.priceRange !== "all") {
@@ -610,15 +506,20 @@ export default function BestSeller() {
         return false;
       if (filters.priceRange === "1000+" && price < 1000000) return false;
     }
-    if (
-      filters.category !== "all" &&
-      (p.category?._id || p.category) !== filters.category
-    )
-      return false;
+
+    if (filters.category !== "all") {
+      const pCatId =
+        typeof p.category === "object"
+          ? p.category?._id || p.category?.id
+          : p.category;
+      if (pCatId !== filters.category) return false;
+    }
+
     if (filters.size !== "all") {
       const sizes = normalizeSizes(p.size).map((s) => s.toLowerCase());
       if (!sizes.includes(filters.size)) return false;
     }
+
     if (filters.color !== "all") {
       if (
         !`${p.name} ${p.description || ""}`
@@ -648,8 +549,6 @@ export default function BestSeller() {
 
   return (
     <View style={s.container}>
-      {/* <Header /> */}
-
       <FlatList
         data={currentProducts}
         keyExtractor={(item) => String(item._id || item.id)}
@@ -659,7 +558,6 @@ export default function BestSeller() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <>
-            {/* Banner */}
             <View style={s.hero}>
               <Image
                 source={{
@@ -675,7 +573,6 @@ export default function BestSeller() {
               </Text>
             </View>
 
-            {/* Filter Bar */}
             <View style={s.filterBar}>
               <TouchableOpacity
                 style={[s.filterBtn, hasActiveFilters && s.filterBtnActive]}
@@ -700,7 +597,6 @@ export default function BestSeller() {
               )}
             </View>
 
-            {/* Active filter tags */}
             {hasActiveFilters && (
               <ActiveFilters
                 filters={filters}
@@ -727,7 +623,7 @@ export default function BestSeller() {
           </>
         }
         ListFooterComponent={
-          !loading && (
+          !loading ? (
             <>
               <Pagination
                 currentPage={currentPage}
@@ -740,21 +636,20 @@ export default function BestSeller() {
                 </View>
               )}
             </>
-          )
+          ) : null
         }
         renderItem={({ item }) => (
           <ProductCard
             product={item}
             cardWidth={cardWidth}
-            isFavorite={favorites.has(item._id || item.id)}
+            isFavorite={favorites.has((item._id || item.id) as string)}
             onToggleFavorite={toggleFavorite}
-            onPress={(id) => router.push("/product/" + id)}
+            onPress={(id) => router.push(`/product/${id}` as any)}
             onQuickView={setQuickViewProduct}
           />
         )}
       />
 
-      {/* Filter Sheet */}
       <FilterSheet
         visible={filterSheetVisible}
         onClose={() => setFilterSheetVisible(false)}
@@ -769,7 +664,6 @@ export default function BestSeller() {
         }}
       />
 
-      {/* Quick View Modal — swap with your QuickViewModal component */}
       <Modal
         visible={!!quickViewProduct}
         animationType="slide"
@@ -804,15 +698,13 @@ export default function BestSeller() {
             onPress={() => {
               const id = quickViewProduct?._id || quickViewProduct?.id;
               setQuickViewProduct(null);
-              navigation.navigate("product/" + id, { productId: id });
+              router.push(`/product/${id}` as any);
             }}
           >
             <Text style={s.quickViewBtnText}>View Full Detail</Text>
           </TouchableOpacity>
         </View>
       </Modal>
-
-      {/* <Footer /> */}
     </View>
   );
 }
@@ -821,7 +713,6 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   listContent: { paddingHorizontal: 16, paddingBottom: 40 },
 
-  // Hero
   hero: {
     height: 220,
     marginHorizontal: -16,
@@ -842,7 +733,6 @@ const s = StyleSheet.create({
   },
   heroSub: { fontSize: 14, color: "#e5e7eb", marginTop: 6 },
 
-  // Filter bar
   filterBar: {
     flexDirection: "row",
     alignItems: "center",
@@ -868,13 +758,11 @@ const s = StyleSheet.create({
   },
   sortIndicatorText: { fontSize: 12, color: "#6b7280", fontWeight: "500" },
 
-  // Loading / empty
   loading: { paddingVertical: 48, alignItems: "center", gap: 12 },
   loadingText: { color: "#6b7280", fontSize: 14 },
   empty: { paddingVertical: 48, alignItems: "center" },
   emptyText: { fontSize: 15, color: "#6b7280" },
 
-  // Quick view
   quickView: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
@@ -914,4 +802,316 @@ const s = StyleSheet.create({
     alignItems: "center",
   },
   quickViewBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+});
+
+const pag = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+
+    gap: 6,
+
+    paddingVertical: 24,
+
+    paddingHorizontal: 16,
+  },
+
+  btn: {
+    width: 36,
+
+    height: 36,
+
+    borderRadius: 8,
+
+    borderWidth: 1,
+
+    borderColor: "#d1d5db",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    backgroundColor: "#fff",
+  },
+
+  btnActive: { backgroundColor: "#111827", borderColor: "#111827" },
+
+  btnDisabled: { opacity: 0.35 },
+
+  btnText: { fontSize: 14, color: "#374151", fontWeight: "600" },
+
+  btnTextActive: { color: "#fff" },
+});
+
+const fs = StyleSheet.create({
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)" },
+
+  sheet: {
+    backgroundColor: "#fff",
+
+    borderTopLeftRadius: 20,
+
+    borderTopRightRadius: 20,
+
+    paddingHorizontal: 20,
+
+    paddingTop: 16,
+
+    paddingBottom: 32,
+
+    maxHeight: "80%",
+  },
+
+  header: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    alignItems: "center",
+
+    marginBottom: 16,
+  },
+
+  headerTitle: { fontSize: 18, fontWeight: "700", color: "#111" },
+
+  section: { marginBottom: 20 },
+
+  sectionTitle: {
+    fontSize: 13,
+
+    fontWeight: "600",
+
+    color: "#6b7280",
+
+    marginBottom: 10,
+
+    textTransform: "uppercase",
+
+    letterSpacing: 0.5,
+  },
+
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+
+  chip: {
+    paddingHorizontal: 14,
+
+    paddingVertical: 7,
+
+    borderRadius: 20,
+
+    borderWidth: 1,
+
+    borderColor: "#d1d5db",
+
+    backgroundColor: "#fff",
+  },
+
+  chipActive: { backgroundColor: "#111827", borderColor: "#111827" },
+
+  chipText: { fontSize: 13, color: "#374151" },
+
+  chipTextActive: { color: "#fff", fontWeight: "600" },
+
+  applyBtn: {
+    backgroundColor: "#111827",
+
+    borderRadius: 12,
+
+    paddingVertical: 15,
+
+    alignItems: "center",
+
+    marginTop: 8,
+  },
+
+  applyText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+});
+
+const aft = StyleSheet.create({
+  container: { paddingHorizontal: 16, paddingBottom: 12 },
+
+  row: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    alignItems: "center",
+
+    marginBottom: 8,
+  },
+
+  label: { fontSize: 13, fontWeight: "600", color: "#3b82f6" },
+
+  clearAll: { fontSize: 13, color: "#3b82f6", fontWeight: "500" },
+
+  tags: { flexDirection: "row", gap: 8 },
+
+  tag: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    gap: 6,
+
+    backgroundColor: "#3b82f6",
+
+    paddingHorizontal: 12,
+
+    paddingVertical: 6,
+
+    borderRadius: 4,
+  },
+
+  tagText: { fontSize: 12, color: "#fff", fontWeight: "600" },
+});
+
+const pc = StyleSheet.create({
+  card: { marginBottom: 20 },
+
+  imageWrap: {
+    backgroundColor: "#f3f4f6",
+
+    borderRadius: 12,
+
+    overflow: "hidden",
+
+    height: 200,
+
+    marginBottom: 10,
+  },
+
+  image: { width: "100%", height: "100%" },
+
+  imagePlaceholder: { flex: 1, backgroundColor: "#e5e7eb" },
+
+  badge: {
+    position: "absolute",
+
+    top: 8,
+
+    left: 8,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    gap: 3,
+
+    backgroundColor: "#ef4444",
+
+    paddingHorizontal: 7,
+
+    paddingVertical: 3,
+
+    borderRadius: 6,
+  },
+
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
+
+  heartBtn: {
+    position: "absolute",
+
+    top: 8,
+
+    right: 8,
+
+    backgroundColor: "#fff",
+
+    borderRadius: 20,
+
+    padding: 6,
+
+    shadowColor: "#000",
+
+    shadowOffset: { width: 0, height: 1 },
+
+    shadowOpacity: 0.1,
+
+    shadowRadius: 2,
+
+    elevation: 2,
+  },
+
+  overlay: {
+    position: "absolute",
+
+    bottom: 0,
+
+    left: 0,
+
+    right: 0,
+
+    flexDirection: "row",
+
+    gap: 6,
+
+    padding: 10,
+
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+
+  overlayBtnLight: {
+    flex: 1,
+
+    backgroundColor: "#fff",
+
+    paddingVertical: 7,
+
+    borderRadius: 8,
+
+    alignItems: "center",
+  },
+
+  overlayBtnLightText: { fontSize: 11, fontWeight: "700", color: "#111" },
+
+  overlayBtnDark: {
+    flex: 1,
+
+    backgroundColor: "#111",
+
+    borderWidth: 1.5,
+
+    borderColor: "#fff",
+
+    paddingVertical: 7,
+
+    borderRadius: 8,
+
+    alignItems: "center",
+  },
+
+  overlayBtnDarkText: { fontSize: 11, fontWeight: "700", color: "#fff" },
+
+  name: {
+    fontSize: 13,
+
+    fontWeight: "600",
+
+    color: "#111827",
+
+    marginBottom: 4,
+
+    lineHeight: 18,
+  },
+
+  priceRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+
+  price: { fontSize: 15, fontWeight: "700", color: "#111827" },
+
+  originalPrice: {
+    fontSize: 12,
+
+    color: "#9ca3af",
+
+    textDecorationLine: "line-through",
+  },
+
+  outOfStock: {
+    fontSize: 12,
+
+    color: "#ef4444",
+
+    fontWeight: "600",
+
+    marginTop: 4,
+  },
 });

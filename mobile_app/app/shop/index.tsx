@@ -21,77 +21,6 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_WIDTH = (SCREEN_WIDTH - 48) / 2;
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
-const MOCK_PRODUCTS = [
-  {
-    _id: "1",
-    name: "Classic Black Tee",
-    price: 250000,
-    originalPrice: 350000,
-    images: ["https://via.placeholder.com/300/111/fff?text=Tee"],
-    stock: 10,
-    size: "S, M, L",
-    category: { _id: "cat1" },
-    description: "black classic tee",
-  },
-  {
-    _id: "2",
-    name: "Limited Hoodie",
-    price: 850000,
-    images: ["https://via.placeholder.com/300/222/fff?text=Hoodie"],
-    stock: 3,
-    size: "M, L, XL",
-    category: { _id: "cat2" },
-    description: "white hoodie limited",
-  },
-  {
-    _id: "3",
-    name: "Graphic Shirt",
-    price: 450000,
-    originalPrice: 600000,
-    images: ["https://via.placeholder.com/300/333/fff?text=Shirt"],
-    stock: 0,
-    size: "S, M",
-    category: { _id: "cat1" },
-    description: "navy graphic shirt",
-  },
-  {
-    _id: "4",
-    name: "Vintage Pants",
-    price: 1200000,
-    images: ["https://via.placeholder.com/300/444/fff?text=Pants"],
-    stock: 7,
-    size: "M, L",
-    category: { _id: "cat2" },
-    description: "grey vintage pants",
-  },
-  {
-    _id: "5",
-    name: "Drop Shoulder Tee",
-    price: 320000,
-    images: ["https://via.placeholder.com/300/555/fff?text=Drop+Tee"],
-    stock: 2,
-    size: "L, XL",
-    category: { _id: "cat1" },
-    description: "black drop shoulder",
-  },
-  {
-    _id: "6",
-    name: "Cargo Shorts",
-    price: 680000,
-    images: ["https://via.placeholder.com/300/666/fff?text=Cargo"],
-    stock: 15,
-    size: "S, M, L, XL",
-    category: { _id: "cat2" },
-    description: "black cargo shorts",
-  },
-];
-const MOCK_CATEGORIES = [
-  { _id: "cat1", name: "T-Shirts" },
-  { _id: "cat2", name: "Bottoms" },
-];
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -129,7 +58,6 @@ const SORT_OPTIONS = [
 
 const PRODUCTS_PER_PAGE = 8;
 
-// ─── FILTER BOTTOM SHEET ──────────────────────────────────────────────────────
 function FilterSheet({
   visible,
   onClose,
@@ -288,7 +216,6 @@ function FilterSheet({
   );
 }
 
-// ─── ACTIVE FILTER TAGS ───────────────────────────────────────────────────────
 function ActiveFilterTags({ filters, setFilters, categories }: any) {
   const tags = [];
 
@@ -346,7 +273,6 @@ function ActiveFilterTags({ filters, setFilters, categories }: any) {
   );
 }
 
-// ─── PRODUCT CARD ─────────────────────────────────────────────────────────────
 function ProductCard({ product, onPress, onQuickView }: any) {
   const productId = product._id || product.id;
   const productImage = product.images?.[0] || product.image;
@@ -398,7 +324,6 @@ function ProductCard({ product, onPress, onQuickView }: any) {
   );
 }
 
-// ─── QUICK VIEW MODAL ─────────────────────────────────────────────────────────
 function QuickViewModal({ product, visible, onClose, onNavigate }: any) {
   if (!product) return null;
   const productId = product._id || product.id;
@@ -445,7 +370,6 @@ function QuickViewModal({ product, visible, onClose, onNavigate }: any) {
   );
 }
 
-// ─── MAIN SHOP SCREEN ─────────────────────────────────────────────────────────
 export default function ShopScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ search?: string }>();
@@ -751,7 +675,6 @@ export default function ShopScreen() {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
 

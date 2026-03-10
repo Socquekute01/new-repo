@@ -120,16 +120,16 @@ const About = () => {
           platform serving thousands of customers globally.
         </Text>
         <Text style={styles.bodyText}>
-          We believe that fashion is more than just clothing—it's a form of
-          self-expression. That's why we carefully curate every product in our
-          collection, ensuring it meets our high standards for quality, style,
-          and sustainability.
+          We believe that fashion is more than just clothing—it&apos;s a form of
+          self-expression. That&apos;s why we carefully curate every product in
+          our collection, ensuring it meets our high standards for quality,
+          style, and sustainability.
         </Text>
         <Text style={styles.bodyText}>
-          Today, we're proud to be a leading destination for fashion-forward
-          individuals who refuse to compromise on quality or style. Our
-          commitment to excellence has earned us the trust and loyalty of over
-          50,000 customers worldwide.
+          Today, we&apos;re proud to be a leading destination for
+          fashion-forward individuals who refuse to compromise on quality or
+          style. Our commitment to excellence has earned us the trust and
+          loyalty of over 50,000 customers worldwide.
         </Text>
       </View>
 

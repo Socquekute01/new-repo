@@ -1,4 +1,4 @@
-import api, { productAPI } from "@/api";
+import { productAPI } from "@/api";
 import Footer from "@/components/layout/Footer";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -11,77 +11,43 @@ import {
   ImageBackground,
   Modal,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { StyleSheet } from "react-native";
+
+interface BannerSlide {
+  id: string;
+  title: string;
+  subtitle: string;
+  bg: string;
+  accent: string;
+  image: string;
+}
+
+interface Feature {
+  id: string;
+  icon: keyof typeof Feather.glyphMap;
+  title: string;
+  desc: string;
+}
+
+interface Product {
+  _id?: string;
+  id?: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  images?: string[];
+  image?: string;
+  stock: number;
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const PRODUCTS_PER_PAGE = 8;
 
-// ─── MOCK DATA (replace with real API calls) ────────────────────────────────
-
-const MOCK_PRODUCTS = [
-  {
-    _id: "1",
-    name: "Classic Black Tee",
-    price: 450000,
-    originalPrice: 600000,
-    images: [
-      "https://i.pinimg.com/736x/bf/31/8c/bf318c439bd433880bf729504c8fc1e3.jpg",
-    ],
-    stock: 10,
-  },
-  {
-    _id: "2",
-    name: "Limited Edition Hoodie",
-    price: 1200000,
-    images: [
-      "https://i.pinimg.com/736x/ae/e2/1f/aee21fbe2ef1b99629a753ead2067fa2.jpg",
-    ],
-    stock: 3,
-  },
-  {
-    _id: "3",
-    name: "Graphic Collab Shirt",
-    price: 750000,
-    originalPrice: 900000,
-    images: [
-      "https://i.pinimg.com/736x/49/a2/16/49a21650f366b7892a4aeaee996b9d88.jpg",
-    ],
-    stock: 0,
-  },
-  {
-    _id: "4",
-    name: "Vintage Wash Pants",
-    price: 980000,
-    images: [
-      "https://i.pinimg.com/736x/51/b5/5f/51b55f823cb8d028d2c220a40f5e55ea.jpg",
-    ],
-    stock: 7,
-  },
-  {
-    _id: "5",
-    name: "Oversized Drop Tee",
-    price: 520000,
-    originalPrice: 650000,
-    images: [
-      "https://i.pinimg.com/736x/c0/a6/3d/c0a63d21cc8defc9205be2b07f2a50f2.jpg",
-    ],
-    stock: 2,
-  },
-  {
-    _id: "6",
-    name: "Cargo Shorts",
-    price: 680000,
-    images: [
-      "https://i.pinimg.com/736x/8f/bd/74/8fbd7481a68b226f42f8ee6217cdee0a.jpg",
-    ],
-    stock: 15,
-  },
-];
-
-const BANNER_SLIDES = [
+const BANNER_SLIDES: BannerSlide[] = [
   {
     id: "1",
     title: "NEW COLLECTION",
@@ -111,7 +77,7 @@ const BANNER_SLIDES = [
   },
 ];
 
-const FEATURES = [
+const FEATURES: Feature[] = [
   {
     id: "1",
     icon: "package",
@@ -132,22 +98,21 @@ const FEATURES = [
   },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-
-const formatPrice = (price: number) =>
+const formatPrice = (price: number): string =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
     minimumFractionDigits: 0,
   }).format(price);
 
-// ─── HEADER ──────────────────────────────────────────────────────────────────
 
-// ─── BANNER / NAVIGATE SLIDER ─────────────────────────────────────────────────
+interface BannerProps {
+  onNavigate: (screen: string) => void;
+}
 
-function BannerSlider({ onNavigate }) {
+function BannerSlider({ onNavigate }: BannerProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -177,7 +142,7 @@ function BannerSlider({ onNavigate }) {
             onPress={() => onNavigate("shop")}
           >
             <ImageBackground
-              source={slide.image}
+              source={{ uri: slide.image }}
               style={[styles.bannerSlide, { backgroundColor: slide.bg }]}
               resizeMode="cover"
             >
@@ -201,8 +166,6 @@ function BannerSlider({ onNavigate }) {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      {/* Dots */}
       <View style={styles.dotsRow}>
         {BANNER_SLIDES.map((_, i) => (
           <View
@@ -215,19 +178,22 @@ function BannerSlider({ onNavigate }) {
   );
 }
 
-// ─── PRODUCT CARD ─────────────────────────────────────────────────────────────
+interface ProductCardProps {
+  product: Product;
+  onNavigate: (screen: string) => void;
+  onQuickView: (product: Product) => void;
+}
 
-function ProductCard({ product, onNavigate, onQuickView }) {
+function ProductCard({ product, onNavigate, onQuickView }: ProductCardProps) {
   const productId = product._id || product.id;
   const productImage = product.images?.[0] || product.image;
 
   return (
     <TouchableOpacity
       style={styles.productCard}
-      onPress={() => onNavigate("product", { id: productId })}
+      onPress={() => onNavigate(`product/${productId}`)}
       activeOpacity={0.85}
     >
-      {/* Image */}
       <View style={styles.productImageWrap}>
         {productImage ? (
           <Image source={{ uri: productImage }} style={styles.productImage} />
@@ -236,19 +202,13 @@ function ProductCard({ product, onNavigate, onQuickView }) {
             <Feather name="shopping-bag" size={40} color="#ccc" />
           </View>
         )}
-
-        {/* Quick View Overlay */}
         <TouchableOpacity
           style={styles.quickViewBtn}
-          onPress={(e) => {
-            onQuickView(product);
-          }}
+          onPress={() => onQuickView(product)}
         >
           <Text style={styles.quickViewTxt}>Quick View</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Info */}
       <Text style={styles.productName} numberOfLines={2}>
         {product.name}
       </Text>
@@ -260,8 +220,6 @@ function ProductCard({ product, onNavigate, onQuickView }) {
           </Text>
         )}
       </View>
-
-      {/* Stock */}
       {product.stock <= 0 && (
         <Text style={styles.outOfStock}>Out of Stock</Text>
       )}
@@ -272,9 +230,19 @@ function ProductCard({ product, onNavigate, onQuickView }) {
   );
 }
 
-// ─── QUICK VIEW MODAL ─────────────────────────────────────────────────────────
+interface QuickViewProps {
+  product: Product | null;
+  visible: boolean;
+  onClose: () => void;
+  onNavigate: (screen: string, params?: any) => void;
+}
 
-function QuickViewModal({ product, visible, onClose, onNavigate }) {
+function QuickViewModal({
+  product,
+  visible,
+  onClose,
+  onNavigate,
+}: QuickViewProps) {
   if (!product) return null;
   const productId = product._id || product.id;
   const productImage = product.images?.[0] || product.image;
@@ -300,17 +268,11 @@ function QuickViewModal({ product, visible, onClose, onNavigate }) {
           )}
           <Text style={styles.modalName}>{product.name}</Text>
           <Text style={styles.modalPrice}>{formatPrice(product.price)}</Text>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <Text style={styles.modalOriginalPrice}>
-              {formatPrice(product.originalPrice)}
-            </Text>
-          )}
           <TouchableOpacity
             style={styles.modalViewBtn}
             onPress={() => {
-              console.log(productId);
               onClose();
-              onNavigate("product", { id: productId });
+              onNavigate(`product/${productId}`);
             }}
           >
             <Text style={styles.modalViewBtnTxt}>View Full Details</Text>
@@ -321,27 +283,30 @@ function QuickViewModal({ product, visible, onClose, onNavigate }) {
   );
 }
 
-// ─── PRODUCT GRID (Card) ──────────────────────────────────────────────────────
 
-const PRODUCTS_PER_PAGE = 8;
-
-function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
-  const [products, setProducts] = useState([]);
+function ProductGrid({ onNavigate }: { onNavigate: (screen: string) => void }) {
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
+    null,
+  );
 
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(async () => {
-      const listProduct = await productAPI.getAll();
-      setProducts(listProduct);
-      setLoading(false);
-    }, 800);
+    (async () => {
+      try {
+        const listProduct = await productAPI.getAll();
+        setProducts(listProduct || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   const totalPages = Math.ceil(products.length / PRODUCTS_PER_PAGE);
-  const paginatedProducts = products?.slice(
+  const paginatedProducts = products.slice(
     (currentPage - 1) * PRODUCTS_PER_PAGE,
     currentPage * PRODUCTS_PER_PAGE,
   );
@@ -359,7 +324,7 @@ function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
     <>
       <FlatList
         data={paginatedProducts}
-        keyExtractor={(item) => item._id || item.id}
+        keyExtractor={(item) => (item._id || item.id) as string}
         numColumns={2}
         scrollEnabled={false}
         columnWrapperStyle={styles.gridRow}
@@ -372,8 +337,6 @@ function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
           />
         )}
       />
-
-      {/* Pagination */}
       {totalPages > 1 && (
         <View style={styles.paginationRow}>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -397,8 +360,6 @@ function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
           ))}
         </View>
       )}
-
-      {/* Quick View Modal */}
       <QuickViewModal
         product={quickViewProduct}
         visible={!!quickViewProduct}
@@ -409,54 +370,18 @@ function ProductGrid({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-// ─── FEATURES SECTION ─────────────────────────────────────────────────────────
-
-function FeaturesSection() {
-  const iconMap = {
-    package: "package",
-    "check-circle": "check-circle",
-    clock: "clock",
-  };
-
-  return (
-    <View style={styles.featuresSection}>
-      {FEATURES.map((f) => (
-        <View key={f.id} style={styles.featureCard}>
-          <View style={styles.featureIconWrap}>
-            <Feather name={f.icon} size={28} color="#ffffff" />
-          </View>
-          <Text style={styles.featureTitle}>{f.title}</Text>
-          <Text style={styles.featureDesc}>{f.desc}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-// ─── HOMEPAGE ─────────────────────────────────────────────────────────────────
 
 export default function Homepage() {
   const router = useRouter();
-  const handleNavigate = (screen: string, params?: any) => {
-    // navigation.navigate(screen, params);
-    router.push(`/product/${params?.id}`);
-    console.log("Navigate to:", screen, params);
-  };
 
-  const handleLogout = () => {
-    console.log("Logout");
+  const handleNavigate = (screen: string, params?: any) => {
+    router.push(screen as any);
   };
 
   return (
-    <ScrollView
-      style={styles.scrollView}
-      showsVerticalScrollIndicator={false}
-      stickyHeaderIndices={[]}
-    >
-      {/* Banner Slider */}
-      <BannerSlider onNavigate={handleNavigate} />
+    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <BannerSlider onNavigate={(s) => handleNavigate(s)} />
 
-      {/* Featured Section */}
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>Featured Collaboration</Text>
         <Text style={styles.sectionSubtitle}>
@@ -464,17 +389,24 @@ export default function Homepage() {
         </Text>
       </View>
 
-      {/* Products */}
-      <ProductGrid onNavigate={handleNavigate} />
+      <ProductGrid onNavigate={(s) => handleNavigate(s)} />
 
-      {/* Features */}
-      <FeaturesSection />
+      <View style={styles.featuresSection}>
+        {FEATURES.map((f) => (
+          <View key={f.id} style={styles.featureCard}>
+            <View style={styles.featureIconWrap}>
+              <Feather name={f.icon} size={28} color="#ffffff" />
+            </View>
+            <Text style={styles.featureTitle}>{f.title}</Text>
+            <Text style={styles.featureDesc}>{f.desc}</Text>
+          </View>
+        ))}
+      </View>
+
       <Footer />
     </ScrollView>
   );
 }
-
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   safeArea: {

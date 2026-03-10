@@ -1,31 +1,26 @@
-import React, { useState, useRef } from "react";
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  Animated,
-  Image,
-  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 import { useAuth } from "@/context/AuthContext";
 
-const { width: W, height: H } = Dimensions.get("window");
-
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const validateEmail = (email: string) =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-// ─── FIELD INPUT ─────────────────────────────────────────────────────────────
 function Field({
   icon,
   placeholder,
@@ -160,14 +155,14 @@ function LoginForm({
       const result = await login(data.email, data.password);
 
       if (result.success) {
-        onSuccess(result.role || "user");
+        onSuccess(result?.data?.user?.role || "user");
       } else {
         Alert.alert("Login failed", "Invalid email or password");
         preventRef.current = false;
       }
     } catch {
-      // Alert.alert("Error", "An error occurred. Please try again.");
-      // preventRef.current = false;
+      Alert.alert("Error", "An error occurred. Please try again.");
+      preventRef.current = false;
     } finally {
       setLoading(false);
     }
@@ -221,7 +216,7 @@ function LoginForm({
 
       <TouchableOpacity onPress={onSwitch} style={authStyles.switchBtn}>
         <Text style={authStyles.switchTxt}>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Text style={authStyles.switchLink}>Sign Up</Text>
         </Text>
       </TouchableOpacity>
@@ -229,7 +224,6 @@ function LoginForm({
   );
 }
 
-// ─── REGISTER FORM ────────────────────────────────────────────────────────────
 function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
   const { register } = useAuth();
   const [data, setData] = useState({
@@ -373,7 +367,6 @@ function RegisterForm({ onSwitch }: { onSwitch: () => void }) {
   );
 }
 
-// ─── MAIN AUTH SCREEN ─────────────────────────────────────────────────────────
 export default function AuthScreen() {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -477,7 +470,6 @@ export default function AuthScreen() {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const authStyles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f5f5f5" },
   screenContent: { paddingBottom: 40 },

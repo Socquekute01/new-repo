@@ -1,28 +1,27 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  View,
-  Text,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Linking,
-} from "react-native";
+import { cartAPI, orderAPI, vnpayAPI } from "@/api";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { cartAPI, orderAPI, vnpayAPI } from "@/api";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // ─── Replace with your real context & API ────────────────────────────────────
 // import { useCart } from '@/context/CartContext';
 // import { useAuth } from '@/context/AuthContext';
 // import { cartAPI, orderAPI, vnpayAPI } from '@/services/api';
 
-// ─── MOCK DATA ────────────────────────────────────────────────────────────────
 const MOCK_USER = { _id: "u1", email: "user@example.com", phone: "0901234567" };
 const MOCK_CART = [
   {
@@ -47,7 +46,6 @@ const MOCK_CART = [
   },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -60,7 +58,6 @@ const getItemPrice = (item: any) =>
 const getProductId = (item: any) =>
   item?.product?._id || item?.product?.id || item?.product;
 
-// ─── FORM INPUT COMPONENT ─────────────────────────────────────────────────────
 function FormInput({
   label,
   value,
@@ -117,7 +114,6 @@ const inputStyles = StyleSheet.create({
   inputFocused: { borderColor: "#1a1a1a" },
 });
 
-// ─── PAYMENT METHOD OPTION ────────────────────────────────────────────────────
 function PaymentOption({
   value,
   selected,
@@ -144,10 +140,8 @@ function PaymentOption({
   );
 }
 
-// ─── ORDER ITEM ROW ───────────────────────────────────────────────────────────
 function OrderItemRow({ item }: any) {
   const product = item.product;
-  const productId = getProductId(item);
   const productImage = product?.images?.[0] || product?.image;
   const productName = product?.name || "Product";
   const productPrice = getItemPrice(item);
@@ -189,7 +183,6 @@ function OrderItemRow({ item }: any) {
   );
 }
 
-// ─── SECTION HEADER ───────────────────────────────────────────────────────────
 function SectionHeader({ title, step }: { title: string; step: number }) {
   return (
     <View style={styles.sectionHeader}>
@@ -201,7 +194,6 @@ function SectionHeader({ title, step }: { title: string; step: number }) {
   );
 }
 
-// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
 export default function OrderScreen() {
   const router = useRouter();
 
@@ -597,7 +589,6 @@ export default function OrderScreen() {
   );
 }
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f8f8" },
 

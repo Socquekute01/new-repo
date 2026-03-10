@@ -125,7 +125,6 @@ export const login = async (req, res) => {
         message: "Invalid email or password",
       });
     }
-    console.log("🚀 ~ login ~ user:", user)
 
     const isPasswordCorrect = await user.comparePassword(password);
     // if (!isPasswordCorrect) {

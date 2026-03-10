@@ -144,7 +144,7 @@ process.on("uncaughtException", (error) => {
 }); // Káº¿t ná»‘i vá»›i MongoDB trÆ°á»›c khi khá»Ÿi Ä‘á»™ng server
 connectDB()
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, "0.0.0.0", () => {
       console.log(`ðŸš€ Server báº¯t Ä‘áº§u trÃªn cá»•ng ${PORT}`);
       console.log(`Swagger UI: http://localhost:${PORT}/swagger`);
     });

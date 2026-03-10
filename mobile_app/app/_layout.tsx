@@ -1,3 +1,4 @@
+import Chatbot from "@/components/chatbot";
 import Header from "@/components/layout/Header";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -16,6 +17,7 @@ export default function RootLayout() {
               <Slot />
             </View>
           </View>
+          <Chatbot />
         </CartProvider>
       </AuthProvider>
     </SafeAreaProvider>

@@ -45,7 +45,7 @@ const app = express();
 
 const allowedOrigins = (
   process.env.CORS_ORIGINS ||
-  "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5001,http://127.0.0.1:5001,http://localhost:8081,http://127.0.0.1:8081"
+  "http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:5001,http://127.0.0.1:5001,http://localhost:8081,http://127.0.0.1:8081,http://10.251.237.99"
 )
   .split(",")
   .map((origin) => origin.trim())
